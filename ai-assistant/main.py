@@ -61,10 +61,10 @@ def organize_files(folder):
 def say(text):
     speaker.speak(f"{text}") 
 
-def listToString(path):
+def makePath(path):
     st = ""
     for element in path:
-        st+=element
+        st+=element+'/'
     return st
 
 def take_command():
@@ -95,11 +95,13 @@ if __name__ =="__main__":
             # documents in programs in c drive
             # documents / programs / c drive
             # cdrive / programs / documents
-            query = query.lower().replace('in','/')
-            path = list(query.split(' '))
+            query = query.title().replace('In','/')
+            path = list(query.split(' / '))
+            path.append('C:/Users')
             path.pop(0)
             path.reverse()
             print(path)
             # cdrive/programs/documents by converting to string
-            final_path = listToString(path)
+            final_path = makePath(path)
             print(final_path)
+            
