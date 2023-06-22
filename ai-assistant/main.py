@@ -4,7 +4,6 @@ import webbrowser
 from functionalities import assistant
 from organise import organiser
 
-            
 if __name__ =="__main__":
     assistant = assistant()
     sites = [['youtube','https://youtube.com'],['google','https://google.com'],['twitch','https://twitch.tv'],['wikipedia','https://wikipedia.com']]
