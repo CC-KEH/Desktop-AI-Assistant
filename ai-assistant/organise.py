@@ -1,9 +1,9 @@
 import os
-from functionalities import assistant
+from assistant import assistant
 import shutil
 import datetime
 class organiser:
-    def organise_files(folder):
+    def organise_files(self,folder):
         os.listdir(folder)
 
     def makePath(path):
@@ -12,7 +12,7 @@ class organiser:
             st+=element+'/'
         return st
     
-    def get_last_modified(file_path):
+    def get_last_modified(self,file_path):
         if os.path.exists(file_path):
             timestamp = os.path.getmtime(file_path)
             last_modified = datetime.datetime.fromtimestamp(timestamp)
@@ -36,7 +36,7 @@ class organiser:
                 shutil.move(file_path,destination)
                 break
     
-    def categorize(parent_path):
+    def categorize(self,parent_path):
         directories = {
         "images": ["jpg", "jpeg", "png", "gif", 'tiff', 'ai', 'indd', 'raw'],
         "videos": ["mp4", "mkv", "avi", 'flv', 'wmv'],
@@ -75,7 +75,8 @@ class organiser:
         print("Directory organization completed.")
 
     def organise(self,path):        
-        assistant.say('Categories or Last updated?')
+        assistantt = assistant()
+        assistantt.say('Categories or Last updated?')
         mode = assistant.take_command().lower()
         if('category' or 'categories' in mode):
             self.categorize(path)

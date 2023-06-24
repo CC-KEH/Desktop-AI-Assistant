@@ -1,17 +1,25 @@
 import speech_recognition as sr
-import os
 import win32com.client
-import webbrowser
-import json
-import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
-speaker = win32com.client.Dispatch('SAPI.SpVoice')
 import subprocess
 
+
 class assistant:
-    def say(text):
-        speaker.speak(f"{text}") 
+    def __init__(self):
+        self.speaker = win32com.client.Dispatch('SAPI.SpVoice')
+        # Get the list of available voices
+        voices = self.speaker.GetVoices()  
+        # Loop through the voices to find the Catherine voice
+        for voice in voices:
+            if voice.GetDescription() == 'Microsoft Catherine':
+                # Set the voice as the active voice
+                self.speaker.Voice = voice
+                break
+            
+    
+    def say(self,text):
+        self.speaker.speak(f"{text}") 
         
     def open_program(self,command):
         try:
@@ -39,4 +47,3 @@ class assistant:
                 return query
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
-           
