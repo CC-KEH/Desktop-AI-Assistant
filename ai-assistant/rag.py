@@ -7,19 +7,16 @@ from tools import *
 from llama_index.tools import QueryEngineTool, ToolMetadata
 from llama_index.agent import ReActAgent
 from llama_index.llms import OpenAI
+from llama_index.readers import PDFReader
+from llama_index import StorageContext, VectorStoreIndex, load_index_from_storage, SimpleDirectoryReader
 from constants import *
-
 load_dotenv()
-
-pdf_path = os.path.join(pdfs_path)
+pdf_path = os.path.join(read_file_path)
 df_path = pd.read_csv(dfs_path)
 
-df_query_engine = PandasQueryEngine(
-    df=df_path, verbose=True, instruction_str=instruction_str)
-
-df_query_engine.update_prompts({"pandas_prompt": pandas_prompt})
 
 tools = [
     note_engine_tool,
-    query_engine_tool,
+    dataframe_reader_engine_tool,
+    file_reader_engine_tool,
 ]

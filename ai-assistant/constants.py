@@ -1,5 +1,5 @@
 notes_path = "data/notes/"
-pdfs_path = "data/pdfs/"
+read_file_path = "data/pdfs/"
 dfs_path = "data/dataframes/"
 
 # Response of some functions
