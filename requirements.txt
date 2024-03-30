@@ -1,0 +1,7 @@
+# Python Version
+llama-index 
+pypdf 
+python-dotenv 
+pandas
+spotipy
+speech_recognition
