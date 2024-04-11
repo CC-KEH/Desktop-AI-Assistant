@@ -1,4 +1,5 @@
-# Python Version
+# Python Version 3.9.18
+
 llama-index 
 pypdf 
 python-dotenv 
@@ -6,3 +7,4 @@ pandas
 spotipy
 speech_recognition
 Selenium
+pywhatkit

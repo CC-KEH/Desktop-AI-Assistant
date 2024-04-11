@@ -7,7 +7,21 @@ import webbrowser
 clientID = '<ClientID>'
 clientSecret = '<ClientSecretID>'
 redirect_uri = 'http://localhost/4000'
-sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=clientID,client_secret=clientSecret))
+sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
+    client_id=clientID, client_secret=clientSecret))
+
+
+def play_song(song_name):
+    pass
+
+
+def add_to_queue(song_name):
+    pass
+
+
+def create_playlist(songs):
+    pass
+
 
 while True:
     print("Welcome, C.C")
@@ -16,7 +30,7 @@ while True:
     choice = int(input("Your Choice: "))
     if choice == 1:
         searchQuery = input("Enter Song Name: ")
-        searchResults = sp.search(searchQuery,1,0,"track")
+        searchResults = sp.search(searchQuery, 1, 0, "track")
         tracks_dict = searchResults['tracks']
         tracks_items = tracks_dict['items']
         song = tracks_items[0]['external_urls']['spotify']
