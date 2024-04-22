@@ -3,9 +3,10 @@ import win32com.client
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
 import subprocess
+from ConfigBox import ConfigBox 
+import json
 
-
-class assistant:
+class Utils:
     def __init__(self):
         self.speaker = win32com.client.Dispatch('SAPI.SpVoice')
         # Get the list of available voices
@@ -21,7 +22,7 @@ class assistant:
     def say(self,text):
         self.speaker.speak(f"{text}") 
         
-    def open_program(self,command):
+    def run_program(self,command):
         try:
             # Execute a system command to find the program path
             result = subprocess.run(['where', command], capture_output=True, text=True)
@@ -47,3 +48,8 @@ class assistant:
                 return query
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
+
+    def read_json(file_path)->ConfigBox:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        return ConfigBox(data)

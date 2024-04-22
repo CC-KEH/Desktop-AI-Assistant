@@ -2,7 +2,7 @@ import os
 from assistant import assistant
 import shutil
 import datetime
-class organiser:
+class Organiser:
     def organise_files(self,folder):
         os.listdir(folder)
 
@@ -74,14 +74,18 @@ class organiser:
 
         print("Directory organization completed.")
 
-    def organise(self,path):        
+    def organise(self,path):
+        
+        # cdrive\\programs\\documents by converting to string
+        
+        final_path = self.makePath(path)     
         assistantt = assistant()
         assistantt.say('Categories or Last updated?')
         mode = assistant.take_command().lower()
         if('category' or 'categories' in mode):
-            self.categorize(path)
+            self.categorize(final_path)
         elif('last' or 'opened' in mode):
-            self.lastUpdated(path)
+            self.lastUpdated(final_path)
                 
             
         

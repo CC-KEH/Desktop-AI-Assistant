@@ -5,13 +5,13 @@ from llama_index import StorageContext, VectorStoreIndex, load_index_from_storag
 from prompts import pandas_prompt, instruction_str
 import os
 from constants import *
-note_file = os.path.join(notes_path, 'notes.txt')
 
 query_question = ""
 query_topic = ""
 
 
-def save_note(note):
+def save_note(note,topic):
+    note_file = os.path.join(notes_path, f'{topic}_notes.txt')
     if not os.path.exists(note_file):
         open(note_file, 'w')
 
@@ -42,12 +42,23 @@ def get_reader_engine():
     )
     return query_engine_tool
 
+def get_obsidian_reader_engine():
+    document = SimpleDirectoryReader('read_obsidian_notes_path').load_data()
+    index = VectorStoreIndex.from_documents(document, show_progress=True)
+    query_engine = index.as_query_engine()
+    query_engine_tool = QueryEngineTool(
+        query_engine=query_engine, metadata=ToolMetadata(
+            name=f'{query_topic}', description=f'This gives detailed information about {query_question}')
+    )
+    return query_engine_tool
+
 
 note_engine_tool = FunctionTool.from_defaults(
     fn=save_note,
     name='note_saver',
-    description='this tool can save a text based note to a file for the user'
+    description='this tool can save a text based note to a file for the user. It takes in a note and a topic as arguments. The note is saved to a file with the topic as the filename.'
 )
 
 dataframe_reader_engine_tool = get_query_engine()
 file_reader_engine_tool = get_reader_engine()
+obsidian_reader_engine_tool = get_obsidian_reader_engine()

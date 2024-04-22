@@ -54,8 +54,8 @@ class Automation:
 
 def main():
     automation = Automation()
-    # automation.search(query='Tech With Tim')
-    # automation.close()
+    automation.search(query='Python Programming Language')
+    automation.close()
     time = [12, 23]
     automation.send_message(phone_no="xxxxxxxxxx",
                             time=time, message="HELLOOO FROM THE OTHER SIDE")

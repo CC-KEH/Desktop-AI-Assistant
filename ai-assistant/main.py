@@ -1,47 +1,122 @@
+import time
 import speech_recognition as sr
-import os
 import webbrowser
-from assistant import assistant
-from organise import organiser
+from utils import *
+from organise import Organiser
 from ai import *
+from automation import Automation
+from player import Player
+from personality import Personality
+import os
+
+class Assistant:
+    def __init__(self):
+        self.personality = Personality()
+        self.utils = Utils()
+        self.organiser = Organiser()
+        self.player = Player()
+        self.automator = Automation()
+        
+    def speak(self, text):
+        self.utils.say(text)
+
+    def listen(self):
+        self.utils.take_command()
+
+    def run_program(self, query):
+        self.utils.run_program(query)
+
+    def organise(self, query):
+        # documents in programs in c drive
+        # documents \\ programs \\ c drive
+        # cdrive \\ programs \\ documents
+        query = query.title().replace("In", "\\")
+        path = list(query.split(" \\ "))
+        path.append("C:\\Users")
+        path.pop(0)
+        path.reverse()
+        self.organiser.organise(path)
+
+
+    def send_message(self):
+        self.speak("Can you tell the Number you want to send a message to?")
+        recipient_no = self.take_command()
+        self.speak("What message do you want to send?")
+        message = self.take_command()
+        self.speak("What time do you want to send the message?")
+        time = self.take_command()
+        self.speak("Okay, I will send message to " + recipient_no + " at " + time)
+        self.automator.send_message(phone_no=recipient_no,time=time,message=message, code='+91')
+    
 
 if __name__ == "__main__":
-    assistant = assistant()
-    organizer = organiser()
+    assistant = Assistant()
 
     brain = Brain()
     bard = Bard()
 
-    sites = [['youtube', 'https://youtube.com'], ['google', 'https://google.com'],
-             ['twitch', 'https://twitch.tv'], ['wikipedia', 'https://wikipedia.com']]
+    sites = [
+        ["youtube", "https://youtube.com"],
+        ["google", "https://google.com"],
+        ["twitch", "https://twitch.tv"],
+        ["wikipedia", "https://wikipedia.com"],
+    ]
+    question_identifier = [
+        "what",
+        "which",
+        "who",
+        "when",
+        "how",
+        "do",
+        "does",
+        "is",
+        "are",
+        "can",
+        "could",
+        "should",
+        "would",
+        "will",
+        "shall",
+        "did",
+        "was",
+        "were",
+        "have",
+        "has",
+        "had",
+        "may",
+        "am",
+    ]
     while True:
-        print('Listening...')
+        print("Listening...")
         query = assistant.take_command()
         for site in sites:
-            if (f"Open {site[0]}".lower() in query.lower()):
-                assistant.say(f"opening {site[0]}")
-                webbrowser.open(f'{site[1]}')
+            if f"Open {site[0]}".lower() in query.lower():
+                assistant.speak(f"opening {site[0]}")
+                webbrowser.open(f"{site[1]}")
 
-        if ('open' in query):
-            command = query.lower().replace('open ', '')
-            assistant.open_program(command)
+        if "open" in query:
+            command = query.lower().replace("open ", "")
+            assistant.run_program(command)
 
-        if ('organise' in query):
-            # documents in programs in c drive
-            # documents \\ programs \\ c drive
-            # cdrive \\ programs \\ documents
-            query = query.title().replace('In', '\\')
-            path = list(query.split(' \\ '))
-            path.append('C:\\Users')
-            path.pop(0)
-            path.reverse()
-            print(path)
+        if "organise" in query:
+            assistant.organise(query)
 
-            # cdrive\\programs\\documents by converting to string
-
-            final_path = organiser.makePath(path)
-            organiser.organise(final_path)
-            print(final_path)
-        if ('what' or 'which' or 'who' or 'when' or 'how' in query):
-            assistant.say(bard.ask(question=query))
-            assistant.say(brain.ask(question=query))
+        if query.startswith([word for word in question_identifier]):
+            # assistant.speak(bard.ask(question=query))
+            assistant.speak(brain.ask(question=query))
+        
+        if "play" in query:
+            assistant.player.play(query)
+        
+        if "exit" in query:
+            break
+        
+        if "search" in query:
+            assistant.automator.search(query)
+        
+        if "message" in query:
+            assistant.send_message()
+        
+        else:
+            assistant.speak("I am not sure what you said. Can you please repeat?")
+            continue
