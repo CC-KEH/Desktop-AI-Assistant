@@ -1,5 +1,4 @@
 import config
-from bardapi import Bard
 import os
 import sys
 from dotenv import load_dotenv
@@ -10,18 +9,7 @@ from prompts import *
 from rag import tools
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-api_key = config.BARD_API
 load_dotenv()
-
-
-class Bard:
-    def _init__(self):
-        self.token = api_key
-        self.agent = Bard(token=self.token)
-
-    def ask(self, question):
-        answer = self.agent.get_answer(question)['content']
-        return answer.encode("utf-8")
 
 
 class Brain:

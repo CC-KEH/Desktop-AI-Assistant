@@ -12,7 +12,6 @@ from constants import *
 load_dotenv()
 
 pdf_path = os.path.join(read_file_path)
-obsidian_notes_path = os.path.join(obsidian_notes_path)
 df_path = pd.read_csv(dfs_path)
 
 
@@ -20,5 +19,4 @@ tools = [
     note_engine_tool,
     dataframe_reader_engine_tool,
     file_reader_engine_tool,
-    get_obsidian_reader_engine,
 ]

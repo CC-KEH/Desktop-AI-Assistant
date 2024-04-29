@@ -1,7 +1,7 @@
 from utils import read_json
 class Personality:
     def __init__(self):
-        self.config = read_json('config.json')
+        self.personality = read_json('personality.json')
         
     def upgrade_personality(self):
         pass

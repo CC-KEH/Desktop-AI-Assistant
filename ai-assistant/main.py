@@ -37,23 +37,32 @@ class Assistant:
         path.reverse()
         self.organiser.organise(path)
 
-
     def send_message(self):
         self.speak("Can you tell the Number you want to send a message to?")
         recipient_no = self.take_command()
+        self.speak("What is the name of the recipient?")
+        recipient_name = self.take_command()
         self.speak("What message do you want to send?")
         message = self.take_command()
         self.speak("What time do you want to send the message?")
         time = self.take_command()
         self.speak("Okay, I will send message to " + recipient_no + " at " + time)
         self.automator.send_message(phone_no=recipient_no,time=time,message=message, code='+91')
-    
+
+        # Save the data
+        data = {
+            'name': recipient_name,
+            'phone_no': recipient_no,
+            'last_message_sent': message
+        }
+
+        with open('whatsapp_data.json', 'w') as f:
+            json.dump(data, f)
 
 if __name__ == "__main__":
     assistant = Assistant()
 
     brain = Brain()
-    bard = Bard()
 
     sites = [
         ["youtube", "https://youtube.com"],
@@ -102,7 +111,6 @@ if __name__ == "__main__":
             assistant.organise(query)
 
         if query.startswith([word for word in question_identifier]):
-            # assistant.speak(bard.ask(question=query))
             assistant.speak(brain.ask(question=query))
         
         if "play" in query:

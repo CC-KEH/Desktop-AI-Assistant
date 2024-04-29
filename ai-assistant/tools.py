@@ -42,15 +42,6 @@ def get_reader_engine():
     )
     return query_engine_tool
 
-def get_obsidian_reader_engine():
-    document = SimpleDirectoryReader('read_obsidian_notes_path').load_data()
-    index = VectorStoreIndex.from_documents(document, show_progress=True)
-    query_engine = index.as_query_engine()
-    query_engine_tool = QueryEngineTool(
-        query_engine=query_engine, metadata=ToolMetadata(
-            name=f'{query_topic}', description=f'This gives detailed information about {query_question}')
-    )
-    return query_engine_tool
 
 
 note_engine_tool = FunctionTool.from_defaults(
@@ -61,4 +52,3 @@ note_engine_tool = FunctionTool.from_defaults(
 
 dataframe_reader_engine_tool = get_query_engine()
 file_reader_engine_tool = get_reader_engine()
-obsidian_reader_engine_tool = get_obsidian_reader_engine()
