@@ -1,5 +1,5 @@
 import os
-from assistant import assistant
+from utils import *
 import shutil
 import datetime
 class Organiser:
@@ -72,6 +72,10 @@ class Organiser:
                     destination = os.path.join(parent_path, "others")
                     shutil.move(file_path, destination)
 
+        file = open("organised.txt", "w")
+        file.write(str(datetime.datetime.now()) + "\n")
+        file.close()
+        
         print("Directory organization completed.")
 
     def organise(self,path):
@@ -79,9 +83,9 @@ class Organiser:
         # cdrive\\programs\\documents by converting to string
         
         final_path = self.makePath(path)     
-        assistantt = assistant()
-        assistantt.say('Categories or Last updated?')
-        mode = assistant.take_command().lower()
+        utils = Utils()
+        utils.say('Categories or Last updated?')
+        mode = utils.take_command().lower()
         if('category' or 'categories' in mode):
             self.categorize(final_path)
         elif('last' or 'opened' in mode):

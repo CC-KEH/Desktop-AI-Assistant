@@ -8,3 +8,4 @@ spotipy
 speech_recognition
 Selenium
 pywhatkit
+whatsapp-python

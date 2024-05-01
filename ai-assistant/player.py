@@ -32,27 +32,8 @@ class Player:
         }
         response = requests.put(spotify_url, headers=headers, json=data)
 
-    
-    def play(self, query):
-        task = 'play'
-        self.send_request(task=task)
-
-    def pause(self):
-        task = 'pause'
-        self.send_request(task=task)
-
-    def next_track(self):
-        task = 'next'
-        self.send_request(task=task)
-
-    def previous(self):
-        task = 'previous'
-        self.send_request(task=task)
-        
-    def repeat(self):
-        task = 'repeat'
-        self.send_request(task=task)
-        
-    def shuffle(self):
-        task = 'shuffle'
-        self.send_request(task=task)
+    def controller(self,task):
+        if task not in self.tasks:
+            raise ValueError('Invalid Task')
+        else:
+            self.send_request(task)

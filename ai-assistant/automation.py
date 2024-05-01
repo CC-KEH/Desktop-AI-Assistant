@@ -33,32 +33,53 @@ class Automation:
         link = self.driver.find_element(By.PARTIAL_LINK_TEXT, query)
         link.click()
 
-    def get_sports_news(self, link):
+    def get_tech_news(self):
+        self.driver.get(self.news_link['Tech'])
+        x_path = '//a[@class="post-block__title__link"]'
+        containers = self.driver.find_elements(by='xpath', value=x_path)
+        for container in containers:
+            try:
+                title = container.text
+                link = container.get_attribute('href')
+                print(f'Title: {title}\nLink: {link}\n')
+            except Exception as e:
+                continue
+
+    def get_sports_news(self):
         self.driver.get(self.news_link['Sports'])
         x_path = '//div[@class="teaser__copy-container"]'
         containers = self.driver.find_elements(by='xpath', value=x_path)
+        news = []
         for container in containers:
-            title = self.driver.find_element(by='xpath', value='./a/h3').text
-            sub_title = self.driver.find_element(
-                by='xpath', value='./a/p').text
-            link = self.driver.find_element(
-                By='xpath', value='./a').get_attribute('href')
-
+            try:
+                title = container.find_element(by='xpath', value='./a/h3').text
+                sub_title = container.find_element(by='xpath', value='./a/p').text
+                link = container.find_element(by='xpath', value='./a').get_attribute('href')
+                print(f'Title: {title}\nSub Title: {sub_title}\nLink: {link}\n')
+                news.append(sub_title)
+                if len(news)>2:
+                    return news
+                                
+            except Exception as e:
+                continue
+            
     def send_message(self, phone_no, time: list, message: str, code='+91'):
         pywhatkit.sendwhatmsg(phone_no=code+phone_no, message=message,
                               time_hour=time[0], time_min=time[1],)
 
+    
     def close(self):
         self.driver.quit()
 
 
 def main():
     automation = Automation()
-    automation.search(query='Python Programming Language')
+    # automation.search(query='Python Programming Language')
+    automation.get_entertainment_news()
     automation.close()
-    time = [12, 23]
-    automation.send_message(phone_no="xxxxxxxxxx",
-                            time=time, message="HELLOOO FROM THE OTHER SIDE")
+    # time = [12, 23]
+    # automation.send_message(phone_no="xxxxxxxxxx",
+    #                         time=time, message="HELLOOO FROM THE OTHER SIDE")
 
 
 if __name__ == "__main__":

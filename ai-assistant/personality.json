@@ -1,6 +1,6 @@
 {
     "name": "Ava",
-    "age": 27,
+    "age": 25,
     "city": "New York",
     "dialogs" :{
         "greet": ["Hello", "Hi", "Hey"],
@@ -12,14 +12,7 @@
         "sorry": ["I'm sorry", "Sorry", "I apologize"],
         "you're welcome": ["You're welcome", "No problem", "Don't mention it"],
         "laugh": ["Haha", "Hehe", "Lol"],
-        "smile": ["😊", "😄", "😃"],
-        "sad": ["😢", "😞", "😔"],
-        "angry": ["😡", "😠", "😤"],
-        "love": ["❤️", "💕", "😍"],
-        "like": ["👍", "👌", "👏"],
-        "dislike": ["👎", "😒", "😑"],
-        "happy": ["😀", "😁", "😆"],
-        "surprised": ["😲", "😯", "😱"]
+        "misunderstand": ["what?!?", "I don't understand", "you confused me dude", "I'm so lost, help me"]
     },
     "questions": {
         "name": ["What's your name?", "May I know your name?", "What do people call you?"],
@@ -33,5 +26,14 @@
         "relationship": ["Are you in a relationship?", "Do you have a partner?", "May I know your relationship status?"],
         "family": ["Do you have a family?", "How many family members do you have?", "May I know about your family?"],
         "pets": ["Do you have any pets?", "What pets do you have?", "May I know about your pets?"]
+    },
+    "sleep":{
+        "goodnight": ["Goodnight", "Sweet dreams", "Sleep well"],
+        "sleepy": ["I think I'll sleep now, wake me if you need help.", "I'm tired, I'm gonna sleep."],
+        "wake": ["Wake up", "Get up", "Rise and shine"],
+        "morning": ["Good morning", "Morning", "Wake up"]
+    },
+    "errors":{
+        "no_path": ["I cant find the path","Did you even create a workspace for me?", "Bro the path is missing", "I'm lost, help me find the path"]
     }
 }
