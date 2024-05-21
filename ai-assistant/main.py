@@ -1,16 +1,18 @@
-from random import random
+import random
 import time
-import speech_recognition as sr
 import webbrowser
 import datetime
 from utils import *
 from organise import Organiser
-from brain import *
+# from brain import *
 from automation import Automation
 from player import Player
-from personality import Personality
 from constants import *
+from personality.chat import *
+from personality.personality import Personality
 import os
+import json
+from config import *
 
 class Assistant:
     def __init__(self):
@@ -19,7 +21,7 @@ class Assistant:
         self.organiser = Organiser()
         self.player = Player()
         self.automator = Automation()
-        
+
     def speak(self, text):
         self.utils.say(text)
 
@@ -49,7 +51,7 @@ class Assistant:
         if query is None:
             os.chdir('files')
             pwd = os.cwd()
-            self.organiser.organise(pwd)
+            self.organiser.organise(pwd,query)
             os.chdir('..')
         else:              
             query = query.title().replace("In", "\\")
@@ -61,86 +63,172 @@ class Assistant:
                 path.append(base_path)
                 path.pop(0)
                 path.reverse()
-                self.organiser.organise(path)
+                self.organiser.organise(path,query)
+    
+    def send_message(self, recipient_name, contacts, save_contact):
+            recipient_no = contacts.get(recipient_name)
+            if recipient_no is None:
+                self.speak("Recipient not found.")
+                return
 
-    def send_message(self):
-        self.speak("Can you tell the Number you want to send a message to?")
-        recipient_no = self.take_command()
-        self.speak("What is the name of the recipient?")
-        recipient_name = self.take_command()
-        self.speak("What message do you want to send?")
-        message = self.take_command()
-        self.speak("What time do you want to send the message?")
-        time = self.take_command()
-        self.speak("Okay, I will send message to " + recipient_no + " at " + time)
-        self.automator.send_message(phone_no=recipient_no,time=time,message=message, code='+91')
+            if save_contact:
+                contacts[recipient_name] = recipient_no
+                with open('contacts.json', 'w') as f:
+                    json.dump(contacts, f)
 
-        # Save the data
-        data = {
-            'name': recipient_name,
-            'phone_no': recipient_no,
-            'last_message_sent': message,
-            'time': time.time(),
-        }
+            self.speak("What message do you want to send?")
+            message = self.utils.take_command()
+            self.speak("What time do you want to send the message?")
+            time = self.utils.take_command()
 
-        with open('whatsapp_data.json', 'w') as f:
-            json.dump(data, f)
+            if "now" in time:
+                time = datetime.datetime.now()
 
+            self.speak("Okay, I will send message to " + recipient_name + " at " + str(time))
+            self.automator.send_message(phone_no=recipient_no, time=time, message=message, code='+91')
+    
+    def take_message(self, recipient_name=None):
+        self.speak("Who do you want to send a message to?")
+        recipient_name = self.utils.take_command().lower()
+        try:
+            with open('contacts.json', 'r') as f:
+                contacts = json.load(f)
+        except FileNotFoundError:
+            contacts = {}
+        
+        self.send_message(recipient_name, contacts, recipient_name not in contacts)
+        
 if __name__ == "__main__":
     assistant = Assistant()
 
-    brain = Brain()
+    # brain = Brain()
     start_time = time.time()
     news_time = time.time()
     while True:
         print("Listening...")
         if (time.time() - news_time) > (3600*2):
-            if "Sports" in random.choice(["Sports", "Tech"]):
-                news = assistant.automator.get_sports_news()
-                assistant.speak("Here are some sports news")
-                for i in news:
-                    assistant.speak(i)
-
-            else:
-                news = assistant.automator.get_tech_news()
-                assistant.speak("Here are some tech news")
-                for i in news:
-                    assistant.speak(i)
+            topic = random.choice(news_interests)
+            news = assistant.automator.get_news(topic=topic)
+            assistant.speak(f"Here are some recent news related to {topic}")
+            for src,title in news.items():
+                assistant.speak(title + " source " + src)
             news_time = time.time()
 
         if (time.time() - start_time) > (3600*5):
-            assistant.speak(random.choice(assistant.personality['sleep']['sleepy']))
+            assistant.speak(random.choice(assistant.personality['dialogs']['sleep']))
             break
                 
-        query = assistant.take_command()
-        for site in sites:
-            if f"Open {site[0]}".lower() in query.lower():
-                assistant.speak(f"opening {site[0]}")
-                webbrowser.open(f"{site[1]}")
-
-        if "open" in query:
-            command = query.lower().replace("open ", "")
-            assistant.run_program(command)
-
-        if "organise" in query:
-            assistant.organise(query)
-
-        if query.startswith([word for word in question_identifier]):
-            assistant.speak(brain.ask(question=query))
+        query = assistant.utils.take_command()
+        model_response = get_response(query)
         
-        for word in query:
-            if word in controls:
-                assistant.player.controller(word)
-        
-        if "search" in query:
-            assistant.automator.search(query)
-        
-        if "message" in query:
-            assistant.send_message()
-        
-        if "exit" in query:
-            break
-        
-        else:
-            assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
+        if ' ' in model_response:
+            assistant.speak(model_response)
             continue
+        else:
+            try:
+                task = model_response[0]
+                entity = model_response[1]
+            except IndexError:
+                entity = None
+                
+            if task == 'organise':
+                assistant.organise(entity)
+                
+            elif task == 'ask_gpt':
+                if entity is None:
+                    assistant.speak("What was your question about?")
+                    entity = assistant.utils.take_command()
+                # assistant.speak(brain.ask(question=entity))
+
+            elif task == "open_site":
+                for site in sites:
+                    if f"Open {site[0]}".lower() in query.lower():
+                        assistant.speak(f"opening {site[0]}")
+                        webbrowser.open(f"{site[1]}")
+                
+            elif task == 'send_message':
+                if entity is None:
+                    assistant.take_message()
+                else:
+                    assistant.take_message(entity)
+                    
+            elif task == 'search':
+                assistant.automator.search(entity)
+                
+            elif task == 'run_program':
+                assistant.run_program(entity)
+                
+            elif task == 'play_music':
+                assistant.player.controller(entity)
+            
+            elif task == "control_player":
+                for word in controls:
+                    if word in query:
+                        assistant.player.controller(word)
+                
+            elif task == 'news':
+                if entity is None:
+                    entity = random.choice(news_interests)
+                news = assistant.automator.get_news(topic=entity)
+                assistant.speak(f"Here are some recent news related to {entity}")
+                for src,title in news.items():
+                    assistant.speak(title + " source " + src)
+            
+            elif task == 'summarize':
+                # entity will be a path to a file
+                assistant.automator.summarize(entity)
+            
+            elif task == 'suggestions':
+                assistant.automator.suggestions(entity)
+            
+            elif task == 'bored':
+                # assistant.speak(brain.ask(question="I am bored"))
+                # Open fav sites or play music or suggest something or yt video
+                pass
+            
+            elif task == 'get_weather':
+                assistant.automator.get_weather(entity)
+            
+            elif task == 'exit':
+                break
+            
+            else:
+                assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
+                print("I dont understand")
+                continue        
+        
+        
+        
+        # for site in sites:
+        #     if f"Open {site[0]}".lower() in query.lower():
+        #         assistant.speak(f"opening {site[0]}")
+        #         webbrowser.open(f"{site[1]}")
+        
+        # for word in controls:
+        #     if word in query:
+        #         assistant.player.controller(word)
+                
+        # if "open" in query:
+        #     command = query.lower().replace("open ", "")
+        #     assistant.run_program(command)
+
+        # if "organise" in query:
+        #     assistant.organise(query)
+
+        # if any(query.startswith(word) for word in question_identifier):
+        #     # assistant.speak(brain.ask(question=query))
+        #     print("I dont have a brain yet")
+        
+        # if "search" in query:
+        #     assistant.automator.search(query)
+        
+        # if "message" in query:
+        #     assistant.send_message()
+        
+        # if "exit" in query:
+        #     break
+        
+        # else:
+        #     assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
+        #     print("I dont understand that command")
+        #     continue

@@ -3,8 +3,9 @@ import win32com.client
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
 import subprocess
-from ConfigBox import ConfigBox 
+from box import ConfigBox 
 import json
+import requests
 
 class Utils:
     def __init__(self):
@@ -38,7 +39,7 @@ class Utils:
         except OSError as e:
             print(f"Error opening {command}: {e}")
 
-    def take_command():
+    def take_command(self):
         r = sr.Recognizer()
         with sr.Microphone() as source:
             audio = r.listen(source)
@@ -49,7 +50,32 @@ class Utils:
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
 
-    def read_json(file_path)->ConfigBox:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        return ConfigBox(data)
+def read_json(file_path)->ConfigBox:
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return ConfigBox(data)
+
+
+def get_spotify_token(client_id, client_secret):
+    url = "https://accounts.spotify.com/api/token"
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    data = {
+        "grant_type": "client_credentials",
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+    # Send the POST request
+    response = requests.post(url, headers=headers, data=data)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Print the response content (JSON data)
+        return response.json()["access_token"]
+    else:
+        # Print an error message if the request was not successful
+        print("Error:", response.status_code)
+

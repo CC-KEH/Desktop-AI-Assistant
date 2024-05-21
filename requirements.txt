@@ -1,11 +1,18 @@
-# Python Version 3.9.18
+# Python Version 3.9
 
-llama-index 
-pypdf 
-python-dotenv 
+llama-index
+pypdf
+python-dotenv
 pandas
 spotipy
-speech_recognition
+SpeechRecognition
 Selenium
 pywhatkit
 whatsapp-python
+pywin32
+python-box
+icecream
+torch
+nltk
+scikit-learn
+spacy

@@ -29,3 +29,19 @@
 ## OPENAI API Setup
 
 ### Visit [OpenAI](https://openai.com/)
+
+### Credits
+
+[How to use Python with Notion API](https://dev.to/mihaiandrei97/how-to-use-python-with-notion-api-1n61)
+
+### Architecture
+
+  +--------+           +--------+          +---------+           +--------+
+  |        |---------->|        |--------->|         |           |        |
+  |        |<----------|        |<---------|         |<--------->|        |
+  |        |           |        |          |         |           |        |
+  |  User  |           |  Main  |          | ChatBot |           | System |
+  |        |           |        |          |         |           |        |
+  |        |<----------|        |<---------|         |<--------->|        |
+  |        |---------->|        |--------->|         |           |        |
+  +--------+           +--------+          +---------+           +--------+

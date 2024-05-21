@@ -44,7 +44,7 @@ class Organiser:
         "music": ["mp3", "wav", "aac", 'adt', 'adts', 'aif', 'aifc', 'aiff', 'avi', 'm4a', 'wma'],
         "archives": ["zip", "rar"],
         "applications": ['exe'],
-        "others": []  # For files that don't match any type
+        "others": []
         }
 
         for directory in directories:
@@ -78,7 +78,7 @@ class Organiser:
         
         print("Directory organization completed.")
 
-    def organise(self,path):
+    def organise(self,path,query):
         
         # cdrive\\programs\\documents by converting to string
         
@@ -86,10 +86,13 @@ class Organiser:
         utils = Utils()
         utils.say('Categories or Last updated?')
         mode = utils.take_command().lower()
-        if('category' or 'categories' in mode):
+        if query==None:
             self.categorize(final_path)
-        elif('last' or 'opened' in mode):
-            self.lastUpdated(final_path)
+        else:
+            if('category' or 'categories' in mode):
+                self.categorize(final_path)
+            elif('last' or 'opened' in mode):
+                self.lastUpdated(final_path)
                 
             
         

@@ -4,7 +4,7 @@
     "city": "New York",
     "dialogs" :{
         "greet": ["Hello", "Hi", "Hey"],
-        "goodbye": ["Goodbye", "Bye", "See you later"],
+        "sleep": ["I think I'll sleep now, wake me if you need help.", "I'm tired, I'm gonna sleep."],
         "uncertain": ["I don't know", "I'm not sure", "I'm not certain"],
         "agree": ["Yes", "Yeah", "Sure"],
         "disagree": ["No", "Nope", "I don't think so"],
@@ -26,12 +26,6 @@
         "relationship": ["Are you in a relationship?", "Do you have a partner?", "May I know your relationship status?"],
         "family": ["Do you have a family?", "How many family members do you have?", "May I know about your family?"],
         "pets": ["Do you have any pets?", "What pets do you have?", "May I know about your pets?"]
-    },
-    "sleep":{
-        "goodnight": ["Goodnight", "Sweet dreams", "Sleep well"],
-        "sleepy": ["I think I'll sleep now, wake me if you need help.", "I'm tired, I'm gonna sleep."],
-        "wake": ["Wake up", "Get up", "Rise and shine"],
-        "morning": ["Good morning", "Morning", "Wake up"]
     },
     "errors":{
         "no_path": ["I cant find the path","Did you even create a workspace for me?", "Bro the path is missing", "I'm lost, help me find the path"]

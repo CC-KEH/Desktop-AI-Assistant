@@ -2,9 +2,8 @@ import config
 import os
 import sys
 from dotenv import load_dotenv
-from llama_index.llms import OpenAI
-from llama_index.agent import ReActAgent
-from llama_index.llms import OpenAI
+from llama_index.llms.openai import OpenAI
+from llama_index.core.agent import ReActAgent
 from prompts import *
 from rag import tools
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
