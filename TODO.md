@@ -1,19 +1,21 @@
 # TODO
 
-    - [ ] Connect to Notion and Spotify.
-    - [ ] Incase bored randomly visit to game websites or youtube videos.
     - [ ] Setup file that organise directories and create notion template also to program.
     - [ ] Fix the bug of organising program files as well.
-    - [ ] Spotify: Play, Add to Queue, Add to Playlist, Get Recent Activity and recommend (ChatGPT).
+    - [ ] search files in desktop and google drive.
+    - [ ] set reminder on google calender.
+    - [ ] Room light connection.
     - [ ] Fix the time format.
+    - [ ] Modes -> work, nap
+    - [ ] Custom Commands -> morning routine, night routine
 
 ## Functions
 
     - [x] Commands and Voice Output.
-    - [ ] WhatsApp.
+    - [x] WhatsApp.
     - [ ] Organise Files.
     - [ ] Play Songs on Spotify.
     - [x] Tell News after ever 2 hours.
     - [ ] Access ChatGPT.
     - [ ] RAG System.
-    - [ ] Access Notion.
+    - [x] Access Notion.

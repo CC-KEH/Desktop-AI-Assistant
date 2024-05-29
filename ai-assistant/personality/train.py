@@ -9,7 +9,7 @@ from model import NeuralNet
 from nltk_utils import tokenize, stem, bag_of_words
 
 # Load intents
-with open('makima_intents.json', 'r') as f:
+with open('intents.json', 'r') as f:
     intents = json.load(f)
 
 # Extract data from intents
@@ -129,11 +129,11 @@ data = {
     "model_state": best_model.state_dict(),
     "input_size": len(X[0]),
     "hidden_size": best_params['hidden_size'],
-    "output_size": len(tags),
+    "output_size": output_size,
     "all_words": all_words,
     "tags": tags
 }
 
-FILE = "best_model.pth"
+FILE = "makima_v_1.pth"
 torch.save(data, FILE)
 print(f"Training Complete. Best model saved to {FILE}. Best hyperparameters: {best_params}")

@@ -9,14 +9,14 @@ import spacy
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 nlp = spacy.load("en_core_web_sm")
 
-function_intents = ["search", "news", "send_message", "run_program", "play_music", "summarize", "suggestions"]
-entity_not_required = ["bored", "get_weather"]
+function_intents = ["search", "news", "send_message", "run_program", "play_music", "summarize", "suggestions","notion","open_site","ask_gpt","get_weather"]
+entity_not_required = ["bored", "get_weather","control_player"]
 # Load intents, jobs, and courses
-with open('makima_intents.json', 'r') as f:
+with open('intents.json', 'r') as f:
     intents = json.load(f)
 
 # Load the pre-trained model and other data
-FILE = "best_model.pth"
+FILE = "makima_v_1.pth"
 data = torch.load(FILE)
 
 input_size = data["input_size"]

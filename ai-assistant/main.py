@@ -1,18 +1,20 @@
-import random
-import time
-import webbrowser
-import datetime
-from utils import *
-from organise import Organiser
-# from brain import *
-from automation import Automation
-from player import Player
-from constants import *
-from personality.chat import *
-from personality.personality import Personality
 import os
 import json
-from config import *
+import time
+import random
+import datetime
+import webbrowser
+from tools.utils import *
+from connections.brain import *
+from saved_data.config import *
+from saved_data.constants import *
+from saved_data.contacts import contacts
+from connections.notion import Notion
+from connections.player import Player
+from tools.organise import Organiser
+from automation.automation import Automation
+from personality.chat import *
+from personality.personality import Personality
 
 class Assistant:
     def __init__(self):
@@ -21,7 +23,7 @@ class Assistant:
         self.organiser = Organiser()
         self.player = Player()
         self.automator = Automation()
-
+        
     def speak(self, text):
         self.utils.say(text)
 
@@ -145,7 +147,44 @@ if __name__ == "__main__":
                     if f"Open {site[0]}".lower() in query.lower():
                         assistant.speak(f"opening {site[0]}")
                         webbrowser.open(f"{site[1]}")
+            
+            elif task =='notion':
+                if 'notion' in query:
+                    query = query.replace('notion','')
+                notion = Notion()
+                if 'movie' in query:
+                    movies = notion.get_data(asked_for='movies')
+                    movie = random.choice(movies)
+                    assistant.speak(f"You can watch {movie['name']}")
+                    
+                elif 'book' in query:
+                    books = notion.get_data(asked_for='books')
+                    book = random.choice(books)
+                    assistant.speak(f"You can read {books['name']}")
+                    
+                elif 'anime' in query:
+                    animes = notion.get_data(asked_for='animes')
+                    anime = random.choice(animes)
+                    assistant.speak(f"You can watch {animes['name']}")
                 
+                elif 'task' in query:
+                    if 'complete' in query:
+                        todo = find_best_match('task', query.split(''))
+                        if todo is None:
+                            assistant.speak("I could not find the task you are talking about")
+                        else:
+                            todos = notion.get_data(asked_for='todos')
+                            for t in todos:
+                                if t['task'] == todo:
+                                    todo = t
+                                    break
+                            notion.update_item(item=todo, asked_for='todos')
+                            assistant.speak(f"Marked {todo['task']} as complete")
+                    else:
+                        todos = notion.get_data(asked_for='todos')
+                        todo = todos[0]
+                        assistant.speak(f"You can complete {todo['task']}")
+            
             elif task == 'send_message':
                 if entity is None:
                     assistant.take_message()
@@ -159,12 +198,14 @@ if __name__ == "__main__":
                 assistant.run_program(entity)
                 
             elif task == 'play_music':
-                assistant.player.controller(entity)
+                playlists = assistant.player.get_playlists()
+                playlist = random.choice(playlists)
+                assistant.player.controller("playlist",playlist,'play')
             
             elif task == "control_player":
                 for word in controls:
                     if word in query:
-                        assistant.player.controller(word)
+                        assistant.player.send_request(word)
                 
             elif task == 'news':
                 if entity is None:
@@ -174,18 +215,18 @@ if __name__ == "__main__":
                 for src,title in news.items():
                     assistant.speak(title + " source " + src)
             
-            elif task == 'summarize':
-                # entity will be a path to a file
-                assistant.automator.summarize(entity)
             
             elif task == 'suggestions':
                 assistant.automator.suggestions(entity)
             
             elif task == 'bored':
-                # assistant.speak(brain.ask(question="I am bored"))
-                # Open fav sites or play music or suggest something or yt video
-                pass
-            
+                response = random.choice(1,2)
+                if response == 1:
+                    do =  webbrowser.open(random.choice(sites))
+                    assistant.speak("How about this?")
+                else:
+                    do = assistant.speak(brain.ask(question="I am bored"))
+                
             elif task == 'get_weather':
                 assistant.automator.get_weather(entity)
             
@@ -195,40 +236,4 @@ if __name__ == "__main__":
             else:
                 assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
                 print("I dont understand")
-                continue        
-        
-        
-        
-        # for site in sites:
-        #     if f"Open {site[0]}".lower() in query.lower():
-        #         assistant.speak(f"opening {site[0]}")
-        #         webbrowser.open(f"{site[1]}")
-        
-        # for word in controls:
-        #     if word in query:
-        #         assistant.player.controller(word)
-                
-        # if "open" in query:
-        #     command = query.lower().replace("open ", "")
-        #     assistant.run_program(command)
-
-        # if "organise" in query:
-        #     assistant.organise(query)
-
-        # if any(query.startswith(word) for word in question_identifier):
-        #     # assistant.speak(brain.ask(question=query))
-        #     print("I dont have a brain yet")
-        
-        # if "search" in query:
-        #     assistant.automator.search(query)
-        
-        # if "message" in query:
-        #     assistant.send_message()
-        
-        # if "exit" in query:
-        #     break
-        
-        # else:
-        #     assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
-        #     print("I dont understand that command")
-        #     continue
+                continue
