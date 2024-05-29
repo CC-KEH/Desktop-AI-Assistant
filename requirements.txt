@@ -21,3 +21,8 @@ google-api-python-client
 google-auth-httplib2 
 google-auth-oauthlib
 screen-brightness-control
+opencv-python
+mediapipe
+pycaw
+
+
