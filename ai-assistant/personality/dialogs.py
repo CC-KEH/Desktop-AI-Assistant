@@ -1,5 +1,4 @@
-personality = {
-    "dialogs": {
+dialogs= {
         "sleep": [
             "I'll take some rest, see you later!",
             "I'll take some rest, take care!",
@@ -13,5 +12,4 @@ personality = {
         "errors": {
             "no_path": "that path is not available",
         }
-    }
 }

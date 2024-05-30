@@ -6,7 +6,6 @@
     - [ ] set reminder on google calender.
     - [ ] Room light connection.
     - [ ] Fix the time format.
-    - [ ] Modes -> work, nap
     - [ ] Custom Commands -> morning routine, night routine
 
 ## Functions

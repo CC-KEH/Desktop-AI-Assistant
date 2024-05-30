@@ -7,7 +7,6 @@ import requests
 from fuzzywuzzy import fuzz
 import spacy 
 nlp = spacy.load("en_core_web_sm")
-
 class Utils:
     def __init__(self):
         self.speaker = win32com.client.Dispatch('SAPI.SpVoice')
@@ -36,6 +35,7 @@ class Utils:
                 print(f"Opened {command} successfully!")
             else:
                 print(f"Program '{command}' not found.")
+                
         except OSError as e:
             print(f"Error opening {command}: {e}")
 

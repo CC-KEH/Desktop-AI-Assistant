@@ -19,7 +19,6 @@ class Brain:
         self.agent = ReActAgent.from_tools(
             tools, llm=self.llm, verbose=True, context=context_str)
         
-        
     def ask(self, question):
         response = self.agent.query(question)
         return response.text

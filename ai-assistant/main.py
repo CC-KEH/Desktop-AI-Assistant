@@ -1,5 +1,4 @@
 import os
-import json
 import time
 import random
 import datetime
@@ -14,7 +13,7 @@ from connections.player import Player
 from tools.organise import Organiser
 from automation.automation import Automation
 from personality.chat import *
-from personality.personality import personality
+from personality.dialogs import dialogs
 
 class Assistant:
     def __init__(self):
@@ -22,7 +21,8 @@ class Assistant:
         self.organiser = Organiser()
         self.player = Player()
         self.automator = Automation()
-        self.personality = personality
+        self.notion = Notion()
+        self.dialogs = dialogs
         
     def speak(self, text):
         self.utils.say(text)
@@ -30,9 +30,12 @@ class Assistant:
     def listen(self):
         self.utils.take_command()
 
-    def run_program(self, query):
-        self.utils.run_program(query)
-
+    def run_program(self, query, third_party=False):
+        if not third_party:
+            self.utils.run_program(query)
+        else:
+            subprocess.run(['powershell', '-Command', games[query]])
+            
     def organise(self, query=None):
         # documents in programs in c drive
         # documents \\ programs \\ c drive
@@ -60,7 +63,7 @@ class Assistant:
             path = list(query.split(" \\ "))
             base_path = "C:\\Users\\assistant_workstation"
             if not os.path.exists(base_path):
-                self.speak(random.choice(self.personality['dialogs']["errors"]['no_path']))
+                self.speak(random.choice(self.dialogs["errors"]['no_path']))
             else:
                 path.append(base_path)
                 path.pop(0)
@@ -91,7 +94,56 @@ class Assistant:
         self.speak("Who do you want to send a message to?")
         recipient_name = self.utils.take_command().lower()
         self.send_message(recipient_name, recipient_name not in contacts)
+    
+    def set_mode(self,mode):
+        modes = ['work', 'play', 'sleep']
+        if mode in modes:
+            if mode=='work':
+                # Tell about todays schedule
+                todos = self.notion.get_data('todos')
+                self.speak("Today's schedule is as follows")
+                for todo in todos:
+                    self.speak(todo['task'])
+                # Open VSCODE
+                self.utils.run_program('code')
+                # Play Spotify, 100X Devloper Playlist
+                self.player.controller(session_type='playlist', session=random.choice(playlists['work']),task='play')
+
+            elif mode=='play':
+                # play mode functionalities
+                # Open Genshin Impact or Open Steam or Open Valorant
+                program = random.choice(list(games.keys()))
+                self.run_program(program, third_party=True)
+                # Play Spotify if opened Genshin Impact or Valorant
+                self.player.controller(session_type='playlist', session=random.choice(playlists['play']),task='play')
+                
+                pass                 
+                
+            else:
+                # sleep mode functionalities
+                # Turn of Spotify if playing
+                # Open Youtube ASMR Playlist
+                # turn brightness to 0
+                # Turn off the room lights
+                # close the program.
+                pass
+    
+    def routine(self,routine):
+        if routine == 'morning':
+            # Start morning routine
+            # morning()
+            # Get mails
+            # Get Todos
+            pass        
+        else:
+            # Start night routine
+            # night()
+            # Summary of the day
+            # Open Notion
+            # Open Camera for Video Jounal
+            pass
         
+    
 if __name__ == "__main__":
     assistant = Assistant()
     assistant_name = 'Makima'
@@ -109,7 +161,7 @@ if __name__ == "__main__":
             news_time = time.time()
 
         if (time.time() - start_time) > (3600*5):
-            assistant.speak(random.choice(assistant.personality['dialogs']['sleep']))
+            assistant.speak(random.choice(assistant.dialogs['sleep']))
             break
         
         query = assistant.utils.take_command()
@@ -229,6 +281,6 @@ if __name__ == "__main__":
                     break
                 
                 else:
-                    assistant.speak(random.choice(assistant.personality['dialogs']['misunderstand']))
+                    assistant.speak(random.choice(assistant.dialogs['misunderstand']))
                     print("I dont understand")
                     continue

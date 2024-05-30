@@ -89,4 +89,3 @@ if __name__ == "__main__":
     playlists = player.get_playlists()
     session_type = 'playlist'
     player.controller(session_type,playlists[0],'play')
-    
