@@ -1,3 +1,4 @@
+from enum import auto
 from urllib import request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -52,6 +53,31 @@ class Automation:
         pywhatkit.sendwhatmsg(phone_no=code+phone_no, message=message,
                               time_hour=time[0], time_min=time[1],)
 
+    def set_mode(self,mode):
+        modes = ['work', 'play', 'sleep']
+        if mode in modes:
+            if mode=='work':
+                # work mode functionalities
+                # Tell about todays schedule
+                # Open VSCODE
+                # Play Spotify, 100X Devloper Playlist
+                # DND mode
+                pass
+            elif mode=='play':
+                # play mode functionalities
+                # Open YouTube or Open Genshin Impact or Open Steam or Open Valorant
+                # Play Spotify if opened Genshin Impact or Valorant
+                pass                 
+                
+            else:
+                # sleep mode functionalities
+                # Turn of Spotify if playing
+                # Open Youtube ASMR Playlist
+                # turn brightness to 0
+                # Turn off the room lights
+                # DND mode
+                # close the program.
+                pass
     def close(self):
         if self.driver:
             self.driver.quit()

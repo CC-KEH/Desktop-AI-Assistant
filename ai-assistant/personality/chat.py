@@ -9,8 +9,13 @@ import spacy
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 nlp = spacy.load("en_core_web_sm")
 
-function_intents = ["search", "news", "send_message", "run_program", "play_music", "summarize", "suggestions","notion","open_site","ask_gpt","get_weather"]
+function_intents = ["search", "news", "send_message", "run_program", 
+                    "play_music", "summarize", "notion","open_site",
+                    "ask_gpt","get_weather","work","nap","games",
+                    "search_file","set_reminder","access_google_services"]
+
 entity_not_required = ["bored", "get_weather","control_player"]
+
 # Load intents, jobs, and courses
 with open('intents.json', 'r') as f:
     intents = json.load(f)
@@ -41,6 +46,7 @@ def extract_entities(sentence):
     return entities
 
 def handle_intent(tag,msg):
+    print("Handling intent: ",tag)
     entities = extract_entities(msg)
     for entity, label in entities:
         return [tag, entity]
@@ -79,4 +85,4 @@ if __name__ == "__main__":
             break
 
         resp = get_response(sentence)
-        print(bot_name+": "+resp)
+        print(f"{bot_name}: {resp}")

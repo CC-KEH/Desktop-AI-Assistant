@@ -2,7 +2,7 @@ from llama_index.core import PromptTemplate
 from utils import *
 
 
-personality = read_json('personality.json')
+personality = 'Makima from chainsaw man, talking to her subordinates.'
 task = "Help the user with their query, and provide them with the necessary information, guidance, and if need be, the tools to complete their task."
 
 context_str = f"""

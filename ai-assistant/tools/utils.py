@@ -19,7 +19,6 @@ class Utils:
                 # Set the voice as the active voice
                 self.speaker.Voice = voice
                 break
-            
     
     def say(self,text):
         self.speaker.speak(f"{text}") 
@@ -50,6 +49,7 @@ class Utils:
                 return query
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
+
 
 def read_json(file_path)->ConfigBox:
     with open(file_path, 'r') as file:
