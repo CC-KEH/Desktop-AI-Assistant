@@ -6,10 +6,12 @@ import webbrowser
 from tools.utils import *
 from connections.brain import *
 from saved_data.config import *
+from saved_data.summary import *
 from saved_data.constants import *
 from saved_data.contacts import contacts
 from connections.notion import Notion
 from connections.player import Player
+from connections.google import Google
 from tools.organise import Organiser
 from automation.automation import Automation
 from personality.chat import *
@@ -22,6 +24,8 @@ class Assistant:
         self.player = Player()
         self.automator = Automation()
         self.notion = Notion()
+        self.google = Google()
+        self.brain = Brain()
         self.dialogs = dialogs
         
     def speak(self, text):
@@ -34,13 +38,15 @@ class Assistant:
         if not third_party:
             self.utils.run_program(query)
         else:
-            subprocess.run(['powershell', '-Command', games[query]])
-            
-    def organise(self, query=None):
-        # documents in programs in c drive
-        # documents \\ programs \\ c drive
-        # cdrive \\ programs \\ documents
-        with open('organised.txt','r') as file:
+            if query in applications.keys():
+                subprocess.run(['powershell', '-Command', applications[query]])
+            elif query in games.keys():
+                subprocess.run(['powershell', '-Command', games[query]])
+            else:
+                self.speak("I cant find the program.")
+                
+    def organise(self):
+        with open(organised_path,'r') as file:
             last_organised = file.readlines()
             if len(last_organised) > 0:
                 last_organised = last_organised[-1]
@@ -48,27 +54,17 @@ class Assistant:
                 last_organised = datetime.datetime.strptime(last_organised, '%Y-%m-%d %H:%M:%S.%f')
                 
                 if (datetime.datetime.now() - last_organised).days < 7:
-                    if query!= None:
-                        self.speak("I have already organised the files this week. Do you want to organise again?")
-                        response = self.take_command()
-                        if response.lower() == 'no':
-                            return
-        if query is None:
-            os.chdir('files')
-            pwd = os.cwd()
-            self.organiser.organise(pwd,query)
-            os.chdir('..')
-        else:              
-            query = query.title().replace("In", "\\")
-            path = list(query.split(" \\ "))
-            base_path = "C:\\Users\\assistant_workstation"
+                    self.speak("Files were already organised this week. Do you want to organise again?")
+                    response = self.take_command()
+                    if 'no' in response.lower():
+                        return
+            
             if not os.path.exists(base_path):
                 self.speak(random.choice(self.dialogs["errors"]['no_path']))
+
             else:
-                path.append(base_path)
-                path.pop(0)
-                path.reverse()
-                self.organiser.organise(path,query)
+                self.organiser.organise()
+                self.speak("Files have been organised successfully.")
     
     def send_message(self, recipient_name, save_contact):
             recipient_no = contacts[recipient_name]
@@ -96,8 +92,16 @@ class Assistant:
         self.send_message(recipient_name, recipient_name not in contacts)
     
     def set_mode(self,mode):
-        modes = ['work', 'play', 'sleep']
+        modes = ['study', 'work', 'play', 'sleep']
         if mode in modes:
+            if mode == 'study':
+                # study mode functionalities
+                # Open obsidian
+                self.run_program('Obsidian', third_party=True)
+                # Open site
+                webbrowser.open(study_utils['site'])
+                # Play Spotify, Study Playlist
+                self.player.controller(session_type='playlist', session=random.choice(playlists['work']),task='play')
             if mode=='work':
                 # Tell about todays schedule
                 todos = self.notion.get_data('todos')
@@ -117,40 +121,56 @@ class Assistant:
                 # Play Spotify if opened Genshin Impact or Valorant
                 self.player.controller(session_type='playlist', session=random.choice(playlists['play']),task='play')
                 
-                pass                 
-                
             else:
                 # sleep mode functionalities
                 # Turn of Spotify if playing
-                # Open Youtube ASMR Playlist
+                self.player.controller(session_type='playlist', session=random.choice(playlists['play']),task='pause')
+                # Play YT ASMR Playlist
+                webbrowser.open(f"{random.choice(asmr_playlist.values())}")
                 # turn brightness to 0
+                control_brightness(0,0)
                 # Turn off the room lights
+                
                 # close the program.
-                pass
+                run = False
     
     def routine(self,routine):
         if routine == 'morning':
-            # Start morning routine
-            # morning()
             # Get mails
+            mails = self.google.get_mails()
+            self.speak("You have " + str(len(mails)) + " new mails.")
+            for mail in mails:
+                self.speak("Subject: ",mail['subject'])
+
             # Get Todos
-            pass        
+            self.speak("Today's schedule is as follows")
+            todos = self.notion.get_data('todos')
+            for todo in todos:
+                self.speak(todo['task'])
+            
         else:
-            # Start night routine
-            # night()
             # Summary of the day
+            last_date = list(summary.keys())[-1]
+            self.speak("Here's what you did today,",summary[last_date])
+
             # Open Notion
+            self.run_program('Notion', third_party=True)
+
             # Open Camera for Video Jounal
-            pass
+            os.system("start microsoft.windows.camera:")
+
+            # Close the program
+            run = False
+            
         
     
 if __name__ == "__main__":
     assistant = Assistant()
     assistant_name = 'Makima'
-    # brain = Brain()
     start_time = time.time()
     news_time = time.time()
-    while True:
+    run = True
+    while run:
         print("Listening...")
         if (time.time() - news_time) > (3600*2):
             topic = random.choice(news_interests)
@@ -187,7 +207,7 @@ if __name__ == "__main__":
                     if entity is None:
                         assistant.speak("What was your question about?")
                         entity = assistant.utils.take_command()
-                    # assistant.speak(brain.ask(question=entity))
+                    assistant.speak(assistant.brain.ask(question=entity))
 
                 elif task == "open_site":
                     for site in sites:
@@ -242,7 +262,7 @@ if __name__ == "__main__":
                     assistant.automator.search(entity)
 
                 elif task == 'run_program':
-                    assistant.run_program(entity)
+                    assistant.run_program(entity, third_party=True)
 
                 elif task == 'play_music':
                     playlists = assistant.player.get_playlists()
@@ -272,7 +292,7 @@ if __name__ == "__main__":
                         do =  webbrowser.open(random.choice(sites))
                         assistant.speak("How about this?")
                     else:
-                        do = assistant.speak(brain.ask(question="I am bored"))
+                        do = assistant.speak(assistant.brain.ask(question="I am bored"))
 
                 elif task == 'get_weather':
                     assistant.automator.get_weather(entity)

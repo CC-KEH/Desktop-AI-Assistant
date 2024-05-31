@@ -1,4 +1,3 @@
-from asyncio import events
 import os
 import os.path
 import datetime as dt 
@@ -114,7 +113,10 @@ class Google:
             print(f"Event created: {(event.get("htmlLink"))}")
         except HttpError as error:
             print(f"error while creating event in google calendar: {error}")
-            
+    
+    def get_mails(self):
+        pass
+    
 if __name__ == "__main__":
     google = Google()
     google.connect_drive()

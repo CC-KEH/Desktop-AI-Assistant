@@ -1,3 +1,4 @@
+import screen_brightness_control as sbc
 import speech_recognition as sr
 import win32com.client
 import subprocess
@@ -6,6 +7,8 @@ import json
 import requests
 from fuzzywuzzy import fuzz
 import spacy 
+import os
+
 nlp = spacy.load("en_core_web_sm")
 class Utils:
     def __init__(self):
@@ -57,6 +60,8 @@ def read_json(file_path)->ConfigBox:
     return ConfigBox(data)
 
 
+
+
 def get_spotify_token(client_id, client_secret):
     url = "https://accounts.spotify.com/api/token"
 
@@ -93,3 +98,31 @@ def extract_entities(sentence):
     doc = nlp(sentence)
     entities = [(entity.text, entity.label_) for entity in doc.ents]
     return entities
+
+
+def search_file(directory, filename):
+    for dirpath, dirnames, files in os.walk(directory):
+        if filename in files:
+            return os.path.join(dirpath, filename)
+    return None
+
+
+
+
+def control_brightness(level=100, display=0):
+    # get the brightness
+    brightness = sbc.get_brightness()
+    # get the brightness for the primary monitor
+    primary = sbc.get_brightness(display=0)
+
+    # set the brightness to 100%
+    # sbc.set_brightness(100)
+    sbc.set_brightness(level, display=0)
+    
+    # set the brightness to 100% for the primary monitor
+    # sbc.get_brightness(100, display=0)
+
+    # show the current brightness for each detected monitor
+    # for monitor in sbc.list_monitors():
+        # print(monitor, ':', sbc.get_brightness(display=monitor), '%')
+
