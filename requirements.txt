@@ -24,4 +24,4 @@ screen-brightness-control
 opencv-python
 mediapipe
 pycaw
-
+simplegmail

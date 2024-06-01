@@ -8,6 +8,9 @@ import requests
 from fuzzywuzzy import fuzz
 import spacy 
 import os
+from urllib.parse import urlencode, urlparse, parse_qs
+import base64
+import webbrowser
 
 nlp = spacy.load("en_core_web_sm")
 class Utils:
@@ -62,6 +65,40 @@ def read_json(file_path)->ConfigBox:
 
 
 
+def get_authorization_code(clientID, redirect_uri, scope):
+    auth_url = "https://accounts.spotify.com/authorize"
+    query_params = {
+        "client_id": clientID,
+        "response_type": "code",
+        "redirect_uri": redirect_uri,
+        "scope": scope,
+    }
+    url = f"{auth_url}?{urlencode(query_params)}"
+    webbrowser.open(url)
+
+def get_access_token(scope, clientID, clientSecret, redirect_uri):
+    get_authorization_code(clientID, redirect_uri, scope)
+    redirect_response = input("Enter the URL you were redirected to: ")
+    parsed_url = urlparse(redirect_response)
+    auth_code = parse_qs(parsed_url.query).get("code")
+    if not auth_code:
+        print("Error: Authorization code not found in the redirect URL.")
+    else:
+        auth_code = auth_code[0]
+        
+    token_url = "https://accounts.spotify.com/api/token"
+    headers = {
+        "Authorization": "Basic " + base64.b64encode(f"{clientID}:{clientSecret}".encode()).decode(),
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "grant_type": "authorization_code",
+        "code": auth_code,
+        "redirect_uri": redirect_uri,
+    }
+    response = requests.post(token_url, headers=headers, data=data)
+    return response.json()
+
 def get_spotify_token(client_id, client_secret):
     url = "https://accounts.spotify.com/api/token"
 
@@ -80,7 +117,6 @@ def get_spotify_token(client_id, client_secret):
         return response.json()["access_token"]
     else:
         print("Error:", response.status_code)
-
 
 
 def find_best_match(self, query, items):

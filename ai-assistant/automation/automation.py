@@ -1,4 +1,3 @@
-from enum import auto
 from urllib import request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service

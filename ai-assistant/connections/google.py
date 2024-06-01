@@ -7,19 +7,28 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
+from email.mime.text import MIMEText
+import base64
 
 
 class Google:
     def __init__(self):
-        self.scopes = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/calendar"]
+        self.scopes = [
+            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/calendar",
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/gmail.send"
+        ]
         self.creds = None
         self.folder_id = None
         self.backup_path = "data/backup/"
-
+        self.get_credentials()
+        self.gmail_service = self.get_gmail_service()
+        
     def get_credentials(self):
-        if os.path.exists("token.json"):
+        if os.path.exists("credentials/google/token.json"):
             self.creds = Credentials.from_authorized_user_file(
-                "token.json", self.scopes
+                "credentials/google/token.json", self.scopes
             )
 
         if not self.creds or not self.creds.valid:
@@ -27,10 +36,10 @@ class Google:
                 self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", self.scopes
+                    "credentials/google/credentials.json", self.scopes
                 )
                 self.creds = flow.run_local_server(port=0)
-            with open("token.json", "w") as token:
+            with open("credentials/google/token.json", "w") as token:
                 token.write(self.creds.to_json())
 
     def connect_drive(self):
@@ -114,8 +123,39 @@ class Google:
         except HttpError as error:
             print(f"error while creating event in google calendar: {error}")
     
-    def get_mails(self):
-        pass
+    def get_gmail_service(self):
+        return build('gmail', 'v1', credentials=self.creds)
+    
+    def get_emails(self,service):
+        now = dt.datetime.now(dt.UTC)
+        yesterday = now - dt.timedelta(days=1)
+        query = f"after:{int(yesterday.timestamp())}"
+        results = self.gmail_service.users().messages().list(userId='me', q=query).execute()
+        messages = results.get('messages', [])
+        for message in messages:
+            msg = self.gmail_service.users().messages().get(userId='me', id=message['id']).execute()
+            msg_data = msg['payload']['headers']
+            for header in msg_data:
+                if header['name'] == 'Subject':
+                    print("Subject:", header['value'])
+                if header['name'] == 'From':
+                    print("From:", header['value'])
+    
+    def create_message(self,to, subject, message_text):
+        message = MIMEText(message_text)
+        message['to'] = to
+        message['subject'] = subject
+        return {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()}
+
+
+    def send_message(self,to, subject, message_text):
+        message = self.create_message(to, subject, message_text)
+        try:
+            sent_message = self.gmail_service.users().messages().send(userId='me', body=message).execute()
+            print(f"Message Id: {sent_message['id']}")
+            return sent_message
+        except Exception as error:
+            print(f"An error occurred: {error}")
     
 if __name__ == "__main__":
     google = Google()

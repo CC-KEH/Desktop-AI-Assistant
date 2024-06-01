@@ -18,7 +18,5 @@
 ### Workflow
 
     - [ ] Test Separately Gemini API.
-    - [ ] Test Separately Spotify API.
-    - [ ] Test Separately Google Drive, Calendar, Mail.
-    - [ ] Test Separately All other functions in `trials.py`
-  
+    - [x] Test Separately Spotify API.
+    - [ ] Test Separately All other functions in `trials.py`.
