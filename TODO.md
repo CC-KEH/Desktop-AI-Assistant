@@ -17,6 +17,6 @@
 
 ### Workflow
 
-    - [ ] Test Separately Gemini API.
-    - [x] Test Separately Spotify API.
+    - [ ] Refactor Project.
     - [ ] Test Separately All other functions in `trials.py`.
+    - [ ] Complete RAG.

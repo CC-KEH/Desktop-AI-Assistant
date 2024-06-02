@@ -5,11 +5,11 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from model import NeuralNet
-from nltk_utils import tokenize, stem, bag_of_words
+from personality.model import NeuralNet
+from personality.nltk_utils import tokenize, stem, bag_of_words
 
 # Load intents
-with open('intents.json', 'r') as f:
+with open('personality/intents.json', 'r') as f:
     intents = json.load(f)
 
 # Extract data from intents

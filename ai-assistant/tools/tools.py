@@ -15,7 +15,7 @@ def save_note(note,topic):
     with open(note_file, 'a') as f:
         f.writelines([note + '\n'])
 
-    return note_save_return_response_successful
+    return 'created notes and saved them'
 
 
 def get_reader_engine():

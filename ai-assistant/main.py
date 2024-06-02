@@ -3,17 +3,16 @@ import time
 import random
 import datetime
 import webbrowser
+
 from tools.utils import *
 from connections.brain import *
-from saved_data.config import *
 from saved_data.summary import *
 from saved_data.constants import *
 from saved_data.contacts import contacts
 from connections.notion import Notion
-from connections.player import Player
-from connections.google import Google
 from tools.organise import Organiser
 from automation.automation import Automation
+from automation.modes_routines import Mode, Routine
 from personality.chat import *
 from personality.dialogs import dialogs
 
@@ -21,11 +20,10 @@ class Assistant:
     def __init__(self):
         self.utils = Utils()
         self.organiser = Organiser()
-        self.player = Player()
         self.automator = Automation()
-        self.notion = Notion()
-        self.google = Google()
         self.brain = Brain()
+        self.mode = Mode()
+        self.routine = Routine()
         self.dialogs = dialogs
         
     def speak(self, text):
@@ -34,17 +32,6 @@ class Assistant:
     def listen(self):
         self.utils.take_command()
 
-    def run_program(self, query, third_party=False):
-        if not third_party:
-            self.utils.run_program(query)
-        else:
-            if query in applications.keys():
-                subprocess.run(['powershell', '-Command', applications[query]])
-            elif query in games.keys():
-                subprocess.run(['powershell', '-Command', games[query]])
-            else:
-                self.speak("I cant find the program.")
-                
     def organise(self):
         with open(organised_path,'r') as file:
             last_organised = file.readlines()
@@ -92,77 +79,26 @@ class Assistant:
         self.send_message(recipient_name, recipient_name not in contacts)
     
     def set_mode(self,mode):
-        modes = ['study', 'work', 'play', 'sleep']
+        modes = ['study', 'work', 'game', 'sleep']
         if mode in modes:
             if mode == 'study':
-                # study mode functionalities
-                # Open obsidian
-                self.run_program('Obsidian', third_party=True)
-                # Open site
-                webbrowser.open(study_utils['site'])
-                # Play Spotify, Study Playlist
-                self.player.controller(session_type='playlist', session=random.choice(playlists['work']),task='play')
+                self.mode.study_mode()
+                
             if mode=='work':
-                # Tell about todays schedule
-                todos = self.notion.get_data('todos')
-                self.speak("Today's schedule is as follows")
-                for todo in todos:
-                    self.speak(todo['task'])
-                # Open VSCODE
-                self.utils.run_program('code')
-                # Play Spotify, 100X Devloper Playlist
-                self.player.controller(session_type='playlist', session=random.choice(playlists['work']),task='play')
-
-            elif mode=='play':
-                # play mode functionalities
-                # Open Genshin Impact or Open Steam or Open Valorant
-                program = random.choice(list(games.keys()))
-                self.run_program(program, third_party=True)
-                # Play Spotify if opened Genshin Impact or Valorant
-                self.player.controller(session_type='playlist', session=random.choice(playlists['play']),task='play')
+                self.mode.work_mode()
+                
+            elif mode=='game':
+                self.mode.game_mode()
                 
             else:
-                # sleep mode functionalities
-                # Turn of Spotify if playing
-                self.player.controller(session_type='playlist', session=random.choice(playlists['play']),task='pause')
-                # Play YT ASMR Playlist
-                webbrowser.open(f"{random.choice(asmr_playlist.values())}")
-                # turn brightness to 0
-                control_brightness(0,0)
-                # Turn off the room lights
-                
-                # close the program.
+                self.mode.sleep_mode()
                 run = False
     
-    def routine(self,routine):
+    def set_routine(self,routine):
         if routine == 'morning':
-            # Get mails
-            mails = self.google.get_mails()
-            self.speak("You have " + str(len(mails)) + " new mails.")
-            for mail in mails:
-                self.speak("Subject: ",mail['subject'])
-
-            # Get Todos
-            self.speak("Today's schedule is as follows")
-            todos = self.notion.get_data('todos')
-            for todo in todos:
-                self.speak(todo['task'])
-            
+            self.routine.morning()
         else:
-            # Summary of the day
-            last_date = list(summary.keys())[-1]
-            self.speak("Here's what you did today,",summary[last_date])
-
-            # Open Notion
-            self.run_program('Notion', third_party=True)
-
-            # Open Camera for Video Jounal
-            os.system("start microsoft.windows.camera:")
-
-            # Close the program
-            run = False
-            
-        
+            self.routine.night()
     
 if __name__ == "__main__":
     assistant = Assistant()
@@ -262,7 +198,7 @@ if __name__ == "__main__":
                     assistant.automator.search(entity)
 
                 elif task == 'run_program':
-                    assistant.run_program(entity, third_party=True)
+                    assistant.utils.run_program(entity, third_party=True)
 
                 elif task == 'play_music':
                     playlists = assistant.player.get_playlists()

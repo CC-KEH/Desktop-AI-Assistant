@@ -1,6 +1,7 @@
 # Python Version 3.9
 
 llama-index
+llama-index-llms-gemini
 pypdf
 python-dotenv
 pandas

@@ -26,9 +26,9 @@ class Google:
         self.gmail_service = self.get_gmail_service()
         
     def get_credentials(self):
-        if os.path.exists("credentials/google/token.json"):
+        if os.path.exists("token.json"):
             self.creds = Credentials.from_authorized_user_file(
-                "credentials/google/token.json", self.scopes
+                "token.json", self.scopes
             )
 
         if not self.creds or not self.creds.valid:
@@ -36,10 +36,10 @@ class Google:
                 self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials/google/credentials.json", self.scopes
+                    "credentials.json", self.scopes
                 )
                 self.creds = flow.run_local_server(port=0)
-            with open("credentials/google/token.json", "w") as token:
+            with open("token.json", "w") as token:
                 token.write(self.creds.to_json())
 
     def connect_drive(self):
@@ -167,3 +167,5 @@ if __name__ == "__main__":
                         summary="AI Assistant Meeting",
                         description="Meeting with AI Assistant",
                         location="Virtual")
+    print("Backup path is ",google.backup_path)
+    print("Current directory is ",os.getcwd())

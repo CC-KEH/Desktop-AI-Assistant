@@ -12,6 +12,8 @@ from urllib.parse import urlencode, urlparse, parse_qs
 import base64
 import webbrowser
 
+from saved_data.constants import applications, games
+
 nlp = spacy.load("en_core_web_sm")
 class Utils:
     def __init__(self):
@@ -27,23 +29,49 @@ class Utils:
     
     def say(self,text):
         self.speaker.speak(f"{text}") 
-        
-    def run_program(self,command):
-        try:
-            # Execute a system command to find the program path
-            result = subprocess.run(['where', command], capture_output=True, text=True)
-            output = result.stdout.strip()
+    
+    def run_program(self, query, third_party=False):
+        if not third_party:
+            try:
+                # Execute a system command to find the program path
+                result = subprocess.run(['where', query], capture_output=True, text=True)
+                output = result.stdout.strip()
 
-            if output:
-                program_path = output.split('\n')[0]
-                self.say(f'opening {command}')
-                subprocess.Popen(program_path)
-                print(f"Opened {command} successfully!")
+                if output:
+                    program_path = output.split('\n')[0]
+                    self.say(f'opening {query}')
+                    subprocess.Popen(program_path)
+                    print(f"Opened {query} successfully!")
+                else:
+                    print(f"Program '{query}' not found.")
+
+            except OSError as e:
+                print(f"Error opening {query}: {e}")
+            
+        else:
+            if query in applications.keys():
+                subprocess.run(['powershell', '-Command', applications[query]])
+            elif query in games.keys():
+                subprocess.run(['powershell', '-Command', games[query]])
             else:
-                print(f"Program '{command}' not found.")
+                self.say("I cant find the program.")
+    
+    # def run_program(self,command):
+    #     try:
+    #         # Execute a system command to find the program path
+    #         result = subprocess.run(['where', command], capture_output=True, text=True)
+    #         output = result.stdout.strip()
+
+    #         if output:
+    #             program_path = output.split('\n')[0]
+    #             self.say(f'opening {command}')
+    #             subprocess.Popen(program_path)
+    #             print(f"Opened {command} successfully!")
+    #         else:
+    #             print(f"Program '{command}' not found.")
                 
-        except OSError as e:
-            print(f"Error opening {command}: {e}")
+    #     except OSError as e:
+    #         print(f"Error opening {command}: {e}")
 
     def take_command(self):
         r = sr.Recognizer()

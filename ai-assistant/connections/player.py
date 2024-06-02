@@ -1,8 +1,6 @@
 from random import random
 import requests
-from config import *
-from utils import get_spotify_token
-from credentials.spotify.credentials import clientID, clientSecret, user_id, redirect_uri
+from credentials.credentials import clientID, clientSecret, user_id, redirect_uri
 from tools.utils import get_access_token, get_spotify_token
 import json
 

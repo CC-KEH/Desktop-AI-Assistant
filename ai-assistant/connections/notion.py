@@ -1,6 +1,6 @@
 import json
 import requests
-from credentials.notion.credentials import *
+from credentials.credentials import *
 
 class Notion:
     def __init__(self):
