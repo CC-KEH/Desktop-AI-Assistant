@@ -2,11 +2,6 @@ import random
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-clientID = 'eb965479544044ffb2b6a3fb81b47606'
-clientSecret = 'b71da68cc3564b1d8e50def798570940'
-user_id = '31e7o7hu6censyh5v5s2mcatfcm4'
-redirect_uri = "http://localhost/4000"
-
 class SpotipyPlayer:
     def __init__(self):
         self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=clientID, client_secret=clientSecret, redirect_uri=redirect_uri, scope="user-read-playback-state,user-modify-playback-state,playlist-read-private"))
