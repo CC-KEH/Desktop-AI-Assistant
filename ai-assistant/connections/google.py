@@ -1,6 +1,9 @@
 import os
 import os.path
 import datetime as dt 
+import logger
+import base64
+
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -8,7 +11,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from email.mime.text import MIMEText
-import base64
 
 
 class Google:
@@ -69,9 +71,12 @@ class Google:
             else:
                 self.folder_id = response["files"][0].get("id")
                 print("Folder already exists!")
+            return True
+        
         except HttpError as error:
-            print(f"error while establishing connection with google drive: {error}")
-
+            logger.info(f"Error while establishing connection with google drive: {error}")
+            return False
+        
     def upload_files(self):
         try:
             for file in os.listdir(self.backup_path):
@@ -82,9 +87,12 @@ class Google:
                 ).execute()
                 print(f"{file} backed up")
                 os.remove(self.backup_path + file)
+            return True
         except HttpError as error:
-            print(f"error while uploading files to google drive: {error}")
-
+            logger.info(f"Error while uploading files to google drive: {error}")
+            return False
+        
+        
     def connect_calendar(self):
         try:
             self.calendar_service = build("calendar", "v3", credentials=self.creds)
@@ -103,11 +111,13 @@ class Google:
             for event in events:
                 start = event["start"].get("dateTime", event["start"].get("date"))
                 print(start, event["summary"])
-            
+            return True
         except HttpError as error:
-            print(f"error while establishing connection with google calendar: {error}")
-    
-    def create_event(self,start_datetime,end_datetime,summary,description,location):
+            logger.info(f"Error while establishing connection with google calendar: {error}")
+            return False
+        
+        
+    def create_event(self,start_datetime,end_datetime,summary,location,description=""):
         event = {
             "summary": summary,
             "location": location,
@@ -119,28 +129,40 @@ class Google:
         }
         try:
             event = self.calendar_service.events().insert(calendarId="primary", body=event).execute()
-            print(f"Event created: {(event.get("htmlLink"))}")
+            # print(f"Event created: {(event.get("htmlLink"))}")
+            return True
         except HttpError as error:
-            print(f"error while creating event in google calendar: {error}")
-    
+            logger.info(f"Error while creating event in google calendar: {error}")
+            return False
+        
     def get_gmail_service(self):
         return build('gmail', 'v1', credentials=self.creds)
     
-    def get_emails(self,service):
-        now = dt.datetime.now(dt.UTC)
-        yesterday = now - dt.timedelta(days=1)
-        query = f"after:{int(yesterday.timestamp())}"
-        results = self.gmail_service.users().messages().list(userId='me', q=query).execute()
-        messages = results.get('messages', [])
-        for message in messages:
-            msg = self.gmail_service.users().messages().get(userId='me', id=message['id']).execute()
-            msg_data = msg['payload']['headers']
-            for header in msg_data:
-                if header['name'] == 'Subject':
-                    print("Subject:", header['value'])
-                if header['name'] == 'From':
-                    print("From:", header['value'])
-    
+    def get_mails(self):
+        try:
+            mails = []
+            now = dt.datetime.now(dt.UTC)
+            yesterday = now - dt.timedelta(days=1)
+            query = f"after:{int(yesterday.timestamp())}"
+            results = self.gmail_service.users().messages().list(userId='me', q=query).execute()
+            messages = results.get('messages', [])
+            for message in messages:
+                msg = self.gmail_service.users().messages().get(userId='me', id=message['id']).execute()
+                msg_data = msg['payload']['headers']
+                for header in msg_data:
+                    if header['name'] == 'Subject':
+                        # print("Subject:", header['value'])
+                        mails.append(("Subject", header['value']))
+                    
+                    if header['name'] == 'From':
+                        # print("From:", header['value'])
+                        mails.append(("From", header['value']))
+                        
+            return mails
+        except Exception as error:
+            logger.info("Error at get_mails: %s", error)
+            return None
+        
     def create_message(self,to, subject, message_text):
         message = MIMEText(message_text)
         message['to'] = to
@@ -148,15 +170,16 @@ class Google:
         return {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
 
-    def send_message(self,to, subject, message_text):
+    def send_mail(self, to, subject, message_text):
         message = self.create_message(to, subject, message_text)
         try:
             sent_message = self.gmail_service.users().messages().send(userId='me', body=message).execute()
             print(f"Message Id: {sent_message['id']}")
             return sent_message
         except Exception as error:
-            print(f"An error occurred: {error}")
-    
+            logger.info(f"Error occured while sending mail: {error}")
+            return False
+        
 if __name__ == "__main__":
     google = Google()
     google.connect_drive()

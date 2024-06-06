@@ -12,7 +12,6 @@ pywhatkit
 whatsapp-python
 pywin32
 python-box
-icecream
 torch
 nltk
 scikit-learn
@@ -25,4 +24,4 @@ screen-brightness-control
 opencv-python
 mediapipe
 pycaw
-simplegmail
+discord

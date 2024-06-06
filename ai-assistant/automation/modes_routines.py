@@ -61,8 +61,6 @@ class Mode:
         # turn brightness to 0
         control_brightness(0,0)
         
-        # Turn off the room lights
-    
     
 class Routine:
     def __init__(self):

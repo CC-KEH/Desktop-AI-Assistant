@@ -1,8 +1,8 @@
 import random
 import json
 import torch
-from personality.model import NeuralNet
-from personality.nltk_utils import bag_of_words, tokenize
+from model import NeuralNet
+from nltk_utils import bag_of_words, tokenize
 import spacy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -10,17 +10,15 @@ nlp = spacy.load("en_core_web_sm")
 
 function_intents = ["search", "news", "send_message", "run_program", 
                     "play_music", "summarize", "notion","open_site",
-                    "ask_gpt","get_weather","work","nap","games",
-                    "search_file","set_reminder","access_google_services"]
-
-entity_not_required = ["bored", "get_weather","control_player"]
+                    "ask_question","work","nap","games","search_file",
+                    "set_reminder","access_google_services","bored", "control_player"]
 
 # Load intents, jobs, and courses
-with open('personality/intents.json', 'r') as f:
+with open('intents.json', 'r') as f:
     intents = json.load(f)
 
 # Load the pre-trained model and other data
-FILE = "personality/makima_v_1.pth"
+FILE = "makima_v_2.pth"
 data = torch.load(FILE)
 
 input_size = data["input_size"]
@@ -39,16 +37,8 @@ bot_name = "Makima"
 
 print(f"{bot_name} here.\n")
 
-def extract_entities(sentence):
-    doc = nlp(sentence)
-    entities = [(entity.text, entity.label_) for entity in doc.ents]
-    return entities
 
-def handle_intent(tag,msg):
-    print("Handling intent: ",tag)
-    entities = extract_entities(msg)
-    for entity, label in entities:
-        return [tag, entity]
+
 
 def get_response(msg):
     sentence = tokenize(msg)
@@ -65,16 +55,13 @@ def get_response(msg):
     prob = probs[0][predicted.item()]
     if prob.item() > 0.80:
         if tag in function_intents:
-            return handle_intent(tag,msg)
-        
-        elif tag in entity_not_required:
-            return [tag]
+            return [False, tag]
         
         for intent in intents['intents']:
             if tag == intent["tag"]:
-                return random.choice(intent['responses'])
+                return [True, random.choice(intent['responses'])]
             
-    return ["ask_gpt", msg]
+    return [False, "ask_gemini"]
 
 if __name__ == "__main__":
     print("Let's chat! (type 'quit' to exit)")

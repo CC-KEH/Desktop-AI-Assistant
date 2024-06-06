@@ -1,111 +1,86 @@
-from random import random
-import requests
-from credentials.credentials import clientID, clientSecret, user_id, redirect_uri
-from tools.utils import get_access_token, get_spotify_token
-import json
+import random
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
 
-class Player:
+clientID = 'eb965479544044ffb2b6a3fb81b47606'
+clientSecret = 'b71da68cc3564b1d8e50def798570940'
+user_id = '31e7o7hu6censyh5v5s2mcatfcm4'
+redirect_uri = "http://localhost/4000"
+
+class SpotipyPlayer:
     def __init__(self):
-        self.clientID = clientID
-        self.clientSecret = clientSecret
-        self.user_id = user_id
-        self.redirect_uri = redirect_uri
-        self.tasks = ['play', 'pause', 'next', 'previous', 'seek', 'repeat', 'shuffle', 'currently-playing']
-        self.scope = 'user-modify-playback-state user-read-playback-state playlist-read-private'
-        self.token = get_spotify_token(self.clientID, self.clientSecret)
-        self.access_token = get_access_token(self.scope, self.clientID, self.clientSecret, self.redirect_uri)['access_token']
-        self.access_header = {
-            'Authorization': f'Bearer {self.access_token}',
-            'Content-Type': 'application/json',
-        }
-        self.header = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
-        }
+        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=clientID, client_secret=clientSecret, redirect_uri=redirect_uri, scope="user-read-playback-state,user-modify-playback-state,playlist-read-private"))
 
-    def start_playback(self, task: str, session_type='', session='') -> None:
-        print(f"Will send the {task} request to Spotify API")
-        
-        data = {"position_ms": 0}
-        
-        if session_type == 'playlist':
-            session_id = session['id']
-            playlist_context_uri = f"spotify:playlist:{session_id}"
-            data["context_uri"] = playlist_context_uri
-        
-        spotify_url = f"https://api.spotify.com/v1/me/player/{task}"
-        response = requests.put(spotify_url, headers=self.access_header, json=data)
-        
-        if response.status_code != 204:
-            print(f"Error: {response.status_code} - {response.json()}")
+    def play(self, uri):
+        self.sp.start_playback(uris=[uri])
 
-    def send_request(self, task):
-        data = {"position_ms": 0}
-        spotify_url = f"https://api.spotify.com/v1/me/player/{task}"
-        response = requests.put(spotify_url, headers=self.access_header, json=data)
-        
-        if response.status_code != 204:
-            print(f"Error: {response.status_code} - {response.json()}")
+    def pause(self):
+        self.sp.pause_playback()
+
+    def next(self):
+        self.sp.next_track()
+
+    def previous(self):
+        self.sp.previous_track()
+
+    def search(self, query):
+        result = self.sp.search(q=query, limit=1)
+        return result['tracks']['items'][0]['uri']
+
+    def get_current_track(self):
+        return self.sp.current_playback()
 
     def get_playlists(self):
-        url = f"https://api.spotify.com/v1/users/{self.user_id}/playlists"
-        params = {
-            "limit": 10,
-            "offset": 0
-        }
-        response = requests.get(url, headers=self.header, params=params)
-        
-        print(json.dumps(response.json(), indent=4))  
-        
-        if response.status_code == 200:
-            playlists = []
-            
-            for playlist in response.json()['items']:
-                playlist_id = playlist['id']
-                playlist_name = playlist['name']
-                playlist_data = {
-                    "id": playlist_id,
-                    "name": playlist_name
-                }
-                playlists.append(playlist_data)
-            return playlists
-        else:
-            print(f"Error: {response.status_code} - {response.json()}")
-            return []
+        return self.sp.current_user_playlists()
 
-    def play_random(self):
-        spotify_url = f"https://api.spotify.com/v1/me/player/play"
+    def format_playlists(self, playlists):
+        return [(playlist['name'],playlist['id']) for playlist in playlists['items']]
+
+    def get_playlist_tracks(self, playlist_id):
+        return self.sp.playlist_tracks(playlist_id)
+
+    def get_playlist_id(self, playlist_name):
         playlists = self.get_playlists()
-        if playlists:
-            playlist_ids = [playlist['id'] for playlist in playlists]
-            playlist_context_uri = f"spotify:playlist:{random.choice(playlist_ids)}"
-            data = {
-                "context_uri": playlist_context_uri,
-                "position_ms": 0
-            }
-            response = requests.put(spotify_url, headers=self.header, json=data)
-            
-            if response.status_code != 204:
-                print(f"Error: {response.status_code} - {response.json()}")
-        else:
-            print("No playlists available to play.")
+        for playlist in playlists['items']:
+            if playlist['name'] == playlist_name:
+                return playlist['id']
+        return None
 
-    def controller(self, session_type='playlist', session='6cgA8p53Q5Sc383KMmjRbT', task='play'):
-        if task not in self.tasks:
-            raise ValueError('Invalid Task')
-        elif task == 'play' or task == 'resume':
-            self.start_playback(task, session_type, session)
-        else:
-            self.send_request(task)
+    def play_playlist(self, playlist_name):
+        playlist_id = self.get_playlist_id(playlist_name)
+        tracks = self.get_playlist_tracks(playlist_id)
+        uris = [track['track']['uri'] for track in tracks['items']]
+        self.sp.start_playback(uris=uris)
 
-
+    def play_playlist_track(self, playlist_name, track_number):
+        playlist_id = self.get_playlist_id(playlist_name)
+        tracks = self.get_playlist_tracks(playlist_id)
+        uri = tracks['items'][track_number]['track']['uri']
+        self.sp.start_playback(uris=[uri])
+    
+    def play_random_playlist(self):
+        playlists = self.get_playlists()
+        playlist = playlists['items'][int(random() * len(playlists['items']))]
+        playlist_id = playlist['id']
+        tracks = self.get_playlist_tracks(playlist_id)
+        uris = [track['track']['uri'] for track in tracks['items']]
+        self.sp.start_playback(uris=uris)
+    
+    
 if __name__ == "__main__":
-    player = Player()
-    playlists = player.get_playlists()
-    player.controller(task='pause')
-
-    if playlists:
-        session_type = 'playlist'
-        player.controller(session_type, playlists[0], 'play')
+    player = SpotipyPlayer()
+    query = "play some song"
+    query = query.replace('play','')
+    query = query.replace('song','')
+    if 'some' or 'something' in query:
+        playlists = player.get_playlists()
+        playlists = player.format_playlists(playlists)
+        print(playlists)
+        player.play_playlist(random.choice(playlists)[0])
+        # player.play_playlist(playlist)
     else:
-        print("No playlists found.")
+        song_name = query
+        song = player.search(song_name)
+        print(song)
+        player.play(song)
+        

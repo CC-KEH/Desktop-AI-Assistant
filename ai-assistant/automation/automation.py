@@ -48,9 +48,13 @@ class Automation:
         articles = self.get_news_data(topic)
         return articles
                 
-    def send_message(self, phone_no, time: list, message: str, code='+91'):
+    def send_message(phone_no, time, message: str, code='+91'):
+        print("hour", time.hour, "minute", time.minute)
+        hour = time.hour
+        minute = time.minute+2
         pywhatkit.sendwhatmsg(phone_no=code+phone_no, message=message,
-                              time_hour=time[0], time_min=time[1],)
+                              time_hour=hour, time_min=minute,)
+    
     def close(self):
         if self.driver:
             self.driver.quit()

@@ -163,13 +163,11 @@ cython_debug/
 
 
 */saved_data/
+*/testing/
+*/discord/
 *.pth
 *.json
 *packages/
-*/credentials/
 *credentials.json
-*token.json
-*client_secret.json
-*gmail_token.json
 *credentials.py
-*config.py
+.env
