@@ -7,7 +7,7 @@ from tools.handlers import *
 from personality.chat import *
 from personality.dialogs import dialogs
 from automation.modes_routines import Mode, Routine
-from tools.gesture_recognition import GestureRecognition
+# from tools.gesture_recognition import GestureRecognition
 
 class Assistant:
     def __init__(self):
@@ -58,9 +58,13 @@ def start_assistant():
         
         query = assistant.utils.take_command()
         
-        if query.startswith(assistant_name) or query.startswith(f"hey {assistant_name}"):
+        if query:
             
+            if query == 'exit':
+                    break
+                
             if 'hey' in query:
+                print("replace hey")
                 query = query.replace('hey', '')
             
             query = query.replace(assistant_name, '')
@@ -74,15 +78,18 @@ def start_assistant():
             else:
                 task = model_response[1]
                 
-                if task == 'organise':
+                if task in ['study', 'work', 'games', 'nap']:
+                    assistant.set_mode(mode=task)
+                
+                elif task in ['morning_routine', 'night_routine']:
+                    assistant.set_routine(routine=task)
+                        
+                elif task == 'organise':
                     handle_organise()
 
-                elif task == 'ask_gemini':
+                elif task in ['ask_gemini', 'ask_question']:
                     handle_ask_question(query=query)
                     
-                elif task == 'ask_question':
-                    handle_ask_question()
-                
                 elif task == "open_site":
                     handle_open_site(query=query)
 
@@ -108,10 +115,10 @@ def start_assistant():
                     handle_run_program(query=query)
 
                 elif task == "games":
-                    handle_games()
+                    handle_games(query=query)
                     
                 elif task == 'play_music':
-                    handle_play_music()
+                    handle_play_music(query=query)
 
                 elif task == "control_player":
                     handle_control_player(query=query)
@@ -122,25 +129,23 @@ def start_assistant():
                 elif task == 'bored':
                     handle_bored()
                     
-                elif task == 'exit' or query == 'exit':
-                    break
-                
                 else:
                     assistant.speak(random.choice(assistant.dialogs['misunderstand']))
                     print("I dont understand")
                     continue
     
 def main():
-    gesture_recognition = GestureRecognition()
+    # gesture_recognition = GestureRecognition()
 
-    thread1 = threading.Thread(target=start_assistant)
-    thread2 = threading.Thread(target=gesture_recognition.read_gesture)
+    # thread1 = threading.Thread(target=start_assistant)
+    # thread2 = threading.Thread(target=gesture_recognition.read_gesture)
 
-    thread1.start()
-    thread2.start()
+    # thread1.start()
+    # thread2.start()
 
-    while True:
-        pass
-    
+    # while True:
+    #     pass
+    pass
+
 if __name__ == "__main__":
     start_assistant()

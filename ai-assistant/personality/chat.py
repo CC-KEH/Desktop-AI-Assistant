@@ -1,8 +1,8 @@
 import random
 import json
 import torch
-from model import NeuralNet
-from nltk_utils import bag_of_words, tokenize
+from personality.model import NeuralNet
+from personality.nltk_utils import bag_of_words, tokenize
 import spacy
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -11,14 +11,15 @@ nlp = spacy.load("en_core_web_sm")
 function_intents = ["search", "news", "send_message", "run_program", 
                     "play_music", "summarize", "notion","open_site",
                     "ask_question","work","nap","games","search_file",
-                    "set_reminder","access_google_services","bored", "control_player"]
+                    "set_reminder","bored", "control_player",
+                    "get_mails","send_mails",]
 
 # Load intents, jobs, and courses
-with open('intents.json', 'r') as f:
+with open('personality/intents.json', 'r') as f:
     intents = json.load(f)
 
 # Load the pre-trained model and other data
-FILE = "makima_v_2.pth"
+FILE = "personality/makima_v_2.pth"
 data = torch.load(FILE)
 
 input_size = data["input_size"]

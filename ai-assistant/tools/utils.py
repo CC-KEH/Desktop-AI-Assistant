@@ -7,6 +7,7 @@ import json
 from fuzzywuzzy import fuzz
 import spacy 
 import os
+from datetime import datetime
 
 from saved_data.constants import applications, games
 
@@ -59,7 +60,7 @@ class Utils:
             audio = r.listen(source)
             try:
                 query = r.recognize_google(audio,language='en-in')
-                print(f'user said {query}')
+                print(f'User: {query}')
                 return query
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
@@ -72,10 +73,11 @@ def read_json(file_path)->ConfigBox:
 
 
 def find_best_match(query, items):
+    print("query",query)
     best_match = None
     highest_score = 0
     for item in items:
-        name = item['name']
+        name = item
         score = fuzz.ratio(query.lower(), name.lower())
         if score > highest_score:
             highest_score = score
@@ -93,3 +95,124 @@ def control_brightness(level=100, display=0):
     # brightness = sbc.get_brightness()
     # primary = sbc.get_brightness(display=display)
     sbc.set_brightness(level, display=display)
+
+
+# 1 - > Year
+# 2 - > Month
+# 3 - > Day
+def get_str_to_int(item,asked_for,isstart):
+    try:
+        if asked_for==1:
+            if item.isdigit():
+                if len(item) == 2:
+                    return int(f"20{item}")
+                return int(item)
+            else:
+                year = item.lower()
+                year_to_num = {
+                'twenty four': 2024,
+                'twenty five': 2025,
+                'twenty six': 2026,
+                'twenty seven': 2027,
+                'twenty eight': 2028,
+                'twenty nine': 2029,
+                'thirty': 2030,
+                }
+                if year == "this year" or year == "current":
+                    return datetime.now().year
+
+                year_name = find_best_match(year, list(year_to_num.keys()))
+                return year_to_num.get(year_name, None)
+
+        elif asked_for==2:
+            month = item.lower()
+            month_to_num = {
+                'january': 1,
+                'february': 2,
+                'march': 3,
+                'april': 4,
+                'may': 5,
+                'june': 6,
+                'july': 7,
+                'august': 8,
+                'september': 9,
+                'october': 10,
+                'november': 11,
+                'december': 12
+            }
+            month_name = find_best_match(month, list(month_to_num.keys()))
+            if month == "this month" or month == "current":
+                return datetime.now().month
+            else:
+                return month_to_num.get(month_name, None)
+        else:
+            day_to_no = {
+                'today': datetime.now().day,
+                'tomorrow': datetime.now().day + 1,
+                'day after tomorrow': datetime.now().day + 2,
+                "first": 1,"second": 2,"third": 3,"4th": 4,"5th": 5,"6th": 6,"7th": 7,
+                "8th": 8,"9th": 9,"10th": 10,"11th": 11,"12th": 12,"13th": 13,
+                "14th": 14,"15th": 15,"16th": 16,"17th": 17,"18th": 18,"19th": 19,"20th": 20,
+                "21st": 21,"22nd": 22,"23rd": 23,"24th": 24,"25th": 25,"26th": 26,"27th": 27,
+                "28th": 28,"29th": 29,"30th": 30,"31st": 31
+            }
+            if day == "today" or day == "now":
+                return datetime.now().day
+
+            day = find_best_match(day, list(day_to_no.keys()))
+            return day_to_no.get(day, None)
+    
+    except Exception as e:
+        print(e)
+        process_datetime(isstart)
+    
+def process_datetime(isstart):
+    utils = Utils()
+    if isstart:
+        utils.say("Tell the start date and time: ")
+    else:
+        utils.say("Tell the end date and time: ")
+        
+    utils.say("Year: ")
+    year = utils.take_command()
+    while not year:
+        utils.say("Year: ")
+        year = utils.take_command()
+    format_year = get_str_to_int(item=year,asked_for=1,isstart=isstart)
+    
+    utils.say("month: ")
+    month = utils.take_command()
+    while not month:
+        utils.say("month: ")
+        month = utils.take_command()
+    format_month = get_str_to_int(item=month,asked_for=2,isstart=isstart)
+    print(format_month)
+
+    utils.say("Day: ")
+    day = utils.take_command()
+    while not day:
+        utils.say("Day: ")
+        day = utils.take_command()
+    format_day = get_str_to_int(item=day,asked_for=3,isstart=isstart)
+    print(format_day)
+    # utils.say("Hour: ")
+    # hour = int(utils.take_command())
+    # utils.say("Enter the minute (MM): ")
+    # minute = int(utils.take_command())
+    print("Year: ",year,"Month: ",format_month,"Day: ",format_day)
+    hour = 00
+    minute = 00
+    second = 00
+    # Combine date and time
+
+    
+    datetime_str = f"{format_year:04d}-{format_month:02d}-{format_day:02d}T{hour:02d}:{minute:02d}:{second:02d}"
+
+    # Validate and convert to datetime object
+    try:
+        datetime_obj = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
+        print(f"Converted datetime: {datetime_obj}")
+        return datetime_obj 
+    except ValueError:
+        print("Invalid date or time format. Please try again.")
+        process_datetime(isstart)

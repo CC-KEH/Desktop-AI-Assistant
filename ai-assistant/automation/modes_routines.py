@@ -1,10 +1,9 @@
+import json
 import random
 import webbrowser
-
 from tools.utils import *
 from saved_data.constants import *
-from saved_data.summary import summary
-from connections.player import Player
+from connections.player import SpotipyPlayer
 from connections.google import Google
 from connections.notion import Notion
 
@@ -12,7 +11,7 @@ class Mode:
     def __init__(self):
         self.modes = ['work', 'study', 'sleep','play']
         self.utils = Utils()    
-        self.player = Player()
+        self.player = SpotipyPlayer()
 
     def run_program(self, query, third_party=False):
         if not third_party:
@@ -82,6 +81,8 @@ class Routine:
 
     def night(self):
         # Summary of the day
+        with open('saved_data/summary.json', 'r') as f:
+            summary = json.load(f)
         last_date = list(summary.keys())[-1]
         self.speak("Here's what you did today,",summary[last_date])
         # Open Notion

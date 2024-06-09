@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import pywhatkit
 from saved_data.constants import *
-from credentials.credentials import news_api_key
 import json
 
 class Automation:

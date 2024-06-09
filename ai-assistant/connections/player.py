@@ -1,6 +1,14 @@
+import os
 import random
+from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+
+load_dotenv()
+clientID = os.getenv("spotify_clientID")
+clientSecret = os.getenv("spotify_clientSecret")
+user_id = os.getenv("spotify_user_id")
+redirect_uri = os.getenv("spotify_redirect_uri")
 
 class SpotipyPlayer:
     def __init__(self):
@@ -65,17 +73,19 @@ class SpotipyPlayer:
 if __name__ == "__main__":
     player = SpotipyPlayer()
     query = "play some song"
-    query = query.replace('play','')
-    query = query.replace('song','')
     if 'some' or 'something' in query:
         playlists = player.get_playlists()
+        print(playlists)
         playlists = player.format_playlists(playlists)
         print(playlists)
         player.play_playlist(random.choice(playlists)[0])
         # player.play_playlist(playlist)
     else:
+        if 'play' in query:
+            query = query.replace('play','')
+        if 'song' in query:
+            query = query.replace('song','')
         song_name = query
         song = player.search(song_name)
         print(song)
         player.play(song)
-        

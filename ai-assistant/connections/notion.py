@@ -1,16 +1,25 @@
+import os
 import json
 import requests
-from credentials.credentials import *
+from dotenv import load_dotenv
 
+load_dotenv()
+
+NOTION_TOKEN = os.getenv('notion_token')
+M_DB_ID = os.getenv('movie_database_id')
+A_DB_ID = os.getenv('anime_database_id')
+B_DB_ID = os.getenv('book_database_id')
+T_DB_ID = os.getenv('todo_database_id')
+NOTION_VERSION = os.getenv('notion_version')
 
 class Notion:
     def __init__(self):
-        self.token = notion_token
-        self.m_db_id = movie_database_id
-        self.a_db_id = anime_database_id
-        self.b_db_id = book_database_id
-        self.t_db_id = todo_database_id
-        self.version = notion_version
+        self.token = NOTION_TOKEN
+        self.m_db_id = M_DB_ID
+        self.a_db_id = A_DB_ID
+        self.b_db_id = B_DB_ID
+        self.t_db_id = T_DB_ID
+        self.version = NOTION_VERSION
         self.header = {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",

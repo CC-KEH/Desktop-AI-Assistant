@@ -1,3 +1,4 @@
+from cgitb import text
 import os
 import json
 import time
@@ -11,7 +12,8 @@ from connections.brain import Brain
 from connections.player import SpotipyPlayer
 from connections.notion import Notion
 from connections.google import Google
-from tools.utils import Utils
+from connections.brain import Brain
+from tools.utils import Utils, process_datetime
 from tools.organise import Organiser
 
 utils_obj = Utils()
@@ -19,6 +21,7 @@ automation_obj = Automation()
 brain_obj = Brain()
 player_obj = SpotipyPlayer()
 organiser_obj = Organiser()
+brain_obj = Brain()
 
 def speak(text:str):
     utils_obj.say(text)
@@ -87,7 +90,8 @@ def handle_organise():
 def handle_ask_question(query=None):
     if query is None:
         query = listen("What is your question about?")
-    utils_obj.say(utils_obj.brain.ask(question=query))
+    print("Called Gemini")
+    utils_obj.say(brain_obj.ask(question=query))
 
 def handle_open_site(query):
     for site in sites:
@@ -97,14 +101,14 @@ def handle_open_site(query):
 
 def handle_set_reminder():
     google_obj = Google()
-    start_date = listen("When should I remind you?")
-    end_date = listen("When should I stop reminding you?")
+    start_date = process_datetime(isstart = True)
+    end_date = process_datetime(isstart = False)
     summary = listen("What should I remind you about?")
     description = listen("Any additional information?")
     location = listen("Location?")
     google_obj.create_event(start_date, end_date, summary, location, description)
                 
-def handle_send_mails():
+def handle_get_mails():
     google_obj = Google()
     mails = google_obj.get_mails()
     if mails is None:
@@ -113,7 +117,7 @@ def handle_send_mails():
         for mail in mails:
             utils_obj.say(f"{mail[0]}  {mail[1]}")
 
-def handle_get_mails():
+def handle_send_mails():
     google_obj = Google()
     to = listen("Who do you want to send the mail to?")
     subject = listen("What is the subject of the mail?")
@@ -188,20 +192,28 @@ def handle_run_program(query):
     
     utils_obj.run_program(query, third_party=True)
 
-def handle_games():
-    game = random.choice(games.keys())
-    utils_obj.say(f"How about {game}")
-    utils_obj.run_program(game, third_party=True)
-
-def handle_play_music():
-    query = query.replace('play','')
-    query = query.replace('song','')
+def handle_games(query=None):
+    if 'open' in query:
+        query = query.replace('open','')
+    query = query.strip()
+    if query is None:
+        game = random.choice(list(games.keys()))
+        utils_obj.say(f"How about {game}")
+        utils_obj.run_program(game, third_party=True)
+    else:
+        utils_obj.run_program(query, third_party=True)
+        
+def handle_play_music(query=None):
     if 'some' or 'something' in query:
         playlists = player_obj.get_playlists()
         playlists = player_obj.format_playlists(playlists)
         print(playlists)
         player_obj.play_playlist(random.choice(playlists)[0])
     else:
+        if 'play' in query:
+            query = query.replace('play','')
+        if 'song' in query:
+            query = query.replace('song','')
         song_name = query
         song = player_obj.search(song_name)
         print(song)
@@ -234,9 +246,10 @@ def handle_news(query=None):
         utils_obj.say(title + " source " + src)
 
 def handle_bored():
-    response = random.choice(1,2)
+    response = random.choice([1,2])
     if response == 1:
-        do =  webbrowser.open(random.choice(sites))
+        site = random.choice(sites)
+        do =  webbrowser.open(site[1])
         utils_obj.say("How about this?")
     else:
         do = utils_obj.say(brain_obj.ask(question="I am bored"))

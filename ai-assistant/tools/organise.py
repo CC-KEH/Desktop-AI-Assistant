@@ -5,7 +5,7 @@ import datetime
 from saved_data.constants import *
 
 class Organiser:
-    def __init__(self,path):
+    def __init__(self):
         self.paths = organise_directories
         
     def categorize(self,parent_path):
