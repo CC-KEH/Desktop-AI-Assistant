@@ -117,6 +117,7 @@ class Google:
             return False
         
     def create_event(self,start_datetime,end_datetime,summary,location,description=""):
+        self.calendar_service = build("calendar", "v3", credentials=self.creds)
         event = {
             "summary": summary,
             "location": location,

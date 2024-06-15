@@ -19,8 +19,7 @@ class Utils:
         voices = self.speaker.GetVoices()  
         # Loop through the voices to find the Catherine voice
         for voice in voices:
-            if voice.GetDescription() == 'Microsoft Catherine':
-                # Set the voice as the active voice
+            if 'Zira' in voice.GetDescription():
                 self.speaker.Voice = voice
                 break
     
@@ -82,7 +81,8 @@ def find_best_match(query, items):
         if score > highest_score:
             highest_score = score
             best_match = item
-    return best_match, highest_score
+            
+    return best_match
 
 def search_file(directory, filename):
     for dirpath, dirnames, files in os.walk(directory):
@@ -101,6 +101,7 @@ def control_brightness(level=100, display=0):
 # 2 - > Month
 # 3 - > Day
 def get_str_to_int(item,asked_for,isstart):
+    item = item.strip()
     try:
         if asked_for==1:
             if item.isdigit():
@@ -146,6 +147,7 @@ def get_str_to_int(item,asked_for,isstart):
             else:
                 return month_to_num.get(month_name, None)
         else:
+            day = item
             day_to_no = {
                 'today': datetime.now().day,
                 'tomorrow': datetime.now().day + 1,
@@ -172,47 +174,34 @@ def process_datetime(isstart):
         utils.say("Tell the start date and time: ")
     else:
         utils.say("Tell the end date and time: ")
+    year = datetime.now().year
         
-    utils.say("Year: ")
-    year = utils.take_command()
-    while not year:
-        utils.say("Year: ")
-        year = utils.take_command()
-    format_year = get_str_to_int(item=year,asked_for=1,isstart=isstart)
-    
-    utils.say("month: ")
-    month = utils.take_command()
-    while not month:
-        utils.say("month: ")
-        month = utils.take_command()
-    format_month = get_str_to_int(item=month,asked_for=2,isstart=isstart)
-    print(format_month)
+    date_input = utils.take_command().lower()
 
-    utils.say("Day: ")
-    day = utils.take_command()
-    while not day:
-        utils.say("Day: ")
-        day = utils.take_command()
-    format_day = get_str_to_int(item=day,asked_for=3,isstart=isstart)
-    print(format_day)
-    # utils.say("Hour: ")
-    # hour = int(utils.take_command())
-    # utils.say("Enter the minute (MM): ")
-    # minute = int(utils.take_command())
-    print("Year: ",year,"Month: ",format_month,"Day: ",format_day)
+    # Split input into day and month
+    day, month = date_input.split()
+    print("Day:",day,"Month:",month)
+    
+    # Convert day and month to numerical values
+    day = get_str_to_int(item=day,asked_for=3,isstart=isstart)
+    month = get_str_to_int(item=month, asked_for=2,isstart=isstart)
+    
+    print("Day:",day,"Month:",month)
+    
+    # Set time to 00:00:00
     hour = 00
     minute = 00
     second = 00
-    # Combine date and time
-
     
-    datetime_str = f"{format_year:04d}-{format_month:02d}-{format_day:02d}T{hour:02d}:{minute:02d}:{second:02d}"
+    # Format datetime string
+    datetime_str = f"{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:{second:02d}"
 
     # Validate and convert to datetime object
     try:
-        datetime_obj = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
-        print(f"Converted datetime: {datetime_obj}")
-        return datetime_obj 
+        # datetime_obj = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
+        # print(f"Converted datetime: {datetime_obj}")
+        # return datetime_obj
+        return datetime_str
     except ValueError:
         print("Invalid date or time format. Please try again.")
         process_datetime(isstart)

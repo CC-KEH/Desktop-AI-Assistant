@@ -1,4 +1,3 @@
-from cgitb import text
 import os
 import json
 import time
@@ -106,8 +105,9 @@ def handle_set_reminder():
     summary = listen("What should I remind you about?")
     description = listen("Any additional information?")
     location = listen("Location?")
+    utils_obj.say("okaey, hangon a second")
     google_obj.create_event(start_date, end_date, summary, location, description)
-                
+
 def handle_get_mails():
     google_obj = Google()
     mails = google_obj.get_mails()

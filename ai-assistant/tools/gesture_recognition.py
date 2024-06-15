@@ -1,72 +1,87 @@
 import cv2
-import time 
+import mediapipe as mp
+from math import hypot
 import numpy as np
-from hand_tracker import HandTracker 
+from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from google.protobuf.json_format import MessageToDict
+import screen_brightness_control as sbc
 
-w_cam, h_cam = 640, 480
+# Left Hand for Brightness
+# Right Hand for Volume
 
 cap = cv2.VideoCapture(0)
-cap.set(3, w_cam)
-cap.set(4, h_cam)
 
-# wrist -> 0
-# thumb -> 1,2,3,4
-# index -> 5,6,7,8
-# middle -> 9,10,11,12
-# ring -> 13,14,15,16
-# pinky -> 17,18,19,20
+mpHands = mp.solutions.hands
+hands = mpHands.Hands(min_detection_confidence=0.75)
+mpDraw = mp.solutions.drawing_utils
 
-tracker = HandTracker(detection_confidence=0.7, max_hands=1)
+devices = AudioUtilities.GetSpeakers()
+interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+volume = cast(interface, POINTER(IAudioEndpointVolume))
 
-class GestureRecognition:
-    def __init__(self):
-        self.devices = AudioUtilities.GetSpeakers()
-        self.interface = self.devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        self.volume = self.interface.QueryInterface(IAudioEndpointVolume)
-        self.volume_range = self.volume.GetVolumeRange()
-        self.min_vol = self.volume_range[0]
-        self.max_vol = self.volume_range[1]
-        self.min_brightness = 0
-        self.max_brightness = 100
-        
-        
-    def control_volume(self,length):
-        # volume.GetMute()
-        smoothness = 5
-        vol_bar = np.interp(length, [50, 200], [self.min_vol, self.max_vol])
-        vol_per = np.interp(length, [50, 200], [0, 100])
-        vol_per = smoothness * round(vol_per/smoothness)
-        self.volume.SetMasterVolumeLevelScalar(vol_per/100, None)
-        
-    def control_brightness(self,brightness):
-        pass
-    
-    def read_gesture(self):
-        while True:
-            success, img = cap.read()
-            img = tracker.find_hands(img)
-            lm_list,bbox = tracker.find_position(img,draw=False)
+volMin, volMax = volume.GetVolumeRange()[:2]
 
-            if len(lm_list) != 0:
-                # Filter based on size
-                wb, hb = bbox[2]-bbox[0], bbox[3]-bbox[1]
-                area = wb*hb//100
-                if 250 < area < 1000:
-                    
-                    # Find distance between thumb and index finger
-                    length,img,_ = tracker.find_distance(4, 8, img, draw=False)
-                    # Check fingers up
-                    fingers = tracker.finger_up()                    
-                    # if pinky down, set volume
-                    if fingers[4] == 0:
-                        print("Volume set")
-                        self.control_volume(length)                   
+def start_gesture_recog():
+    while True:
+        success, img = cap.read()
+        img = cv2.flip(img, 1)
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        results = hands.process(imgRGB)
 
-            cv2.imshow("Image", img)
-            cv2.waitKey(1)
+        left_lmList, right_lmList = [], []
+        if results.multi_hand_landmarks and results.multi_handedness:
+            for i in results.multi_handedness:
+                label = MessageToDict(i)['classification'][0]['label']
+                if label == 'Left':
+                    for lm in results.multi_hand_landmarks[0].landmark:
+                        h, w, _ = img.shape
+                        left_lmList.append([int(lm.x * w), int(lm.y * h)])
+                    mpDraw.draw_landmarks(img, results.multi_hand_landmarks[0], mpHands.HAND_CONNECTIONS)
+                if label == 'Right':
+                    index = 0
+                    if len(results.multi_hand_landmarks) == 2:
+                        index = 1
+                    for lm in results.multi_hand_landmarks[index].landmark:
+                        h, w, _ = img.shape
+                        right_lmList.append([int(lm.x * w), int(lm.y * h)])
+                        mpDraw.draw_landmarks(img, results.multi_hand_landmarks[index], mpHands.HAND_CONNECTIONS)
 
-        
+
+        # Brightness
+        if left_lmList != []:
+            x1, y1 = left_lmList[4][0], left_lmList[4][1]
+            x2, y2 = left_lmList[8][0], left_lmList[8][1]
+
+            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+
+            length = hypot(x2 - x1, y2 - y1)
+
+            bright = np.interp(length, [15, 200], [0, 100])
+            # print(bright, length)
+            pinky = left_lmList[20][1]
+            if pinky < left_lmList[19][1]:
+                sbc.set_brightness(int(bright))
+
+        # Volume
+        if right_lmList != []:
+            x1, y1 = right_lmList[4][0], right_lmList[4][1]
+            x2, y2 = right_lmList[8][0], right_lmList[8][1]
+
+            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+
+            length = hypot(x2 - x1, y2 - y1)
+
+            vol = np.interp(length, [15, 200], [volMin, volMax])
+            # print(vol, length)
+            pinky = right_lmList[20][1]
+            if pinky < right_lmList[19][1]:
+                volume.SetMasterVolumeLevel(vol, None)
+
+        # cv2.imshow('Image', img)
+        if cv2.waitKey(1) & 0xff == ord('q'):
+            break
+
 if __name__ == "__main__":
-    pass
+    start_gesture_recog()

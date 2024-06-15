@@ -134,6 +134,6 @@ data = {
     "tags": tags
 }
 
-FILE = "makima_v_2.pth"
+FILE = "makima_v_3.pth"
 torch.save(data, FILE)
 print(f"Training Complete. Best model saved to {FILE}. Best hyperparameters: {best_params}")

@@ -7,7 +7,6 @@ from tools.handlers import *
 from personality.chat import *
 from personality.dialogs import dialogs
 from automation.modes_routines import Mode, Routine
-# from tools.gesture_recognition import GestureRecognition
 
 class Assistant:
     def __init__(self):
@@ -135,17 +134,19 @@ def start_assistant():
                     continue
     
 def main():
-    # gesture_recognition = GestureRecognition()
+    from tools.gesture_recognition import start_gesture_recog
 
-    # thread1 = threading.Thread(target=start_assistant)
-    # thread2 = threading.Thread(target=gesture_recognition.read_gesture)
+    thread1 = threading.Thread(target=start_assistant)
+    thread2 = threading.Thread(target=start_gesture_recog)
 
-    # thread1.start()
-    # thread2.start()
+    thread1.start()
+    thread2.start()
 
-    # while True:
-    #     pass
-    pass
+    try:
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("Program interrupted by user")
 
 if __name__ == "__main__":
     start_assistant()
