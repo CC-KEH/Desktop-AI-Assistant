@@ -38,11 +38,13 @@ class Assistant:
                 run = False
     
     def set_routine(self,routine):
-        if routine == 'morning':
+        if routine == 'morning_routine':
             self.routine.morning()
+            return True
         else:
             self.routine.night()
-
+            return False
+        
 def start_assistant():
     assistant = Assistant()
     assistant_name = 'Makima'
@@ -56,8 +58,8 @@ def start_assistant():
         run = check_sleep(start_time)
         
         query = assistant.utils.take_command()
-        
-        if query:
+        print(query)
+        if query!="":
             
             if query == 'exit':
                     break
@@ -81,7 +83,7 @@ def start_assistant():
                     assistant.set_mode(mode=task)
                 
                 elif task in ['morning_routine', 'night_routine']:
-                    assistant.set_routine(routine=task)
+                    run = assistant.set_routine(routine=task)
                         
                 elif task == 'organise':
                     handle_organise()
@@ -132,6 +134,7 @@ def start_assistant():
                     assistant.speak(random.choice(assistant.dialogs['misunderstand']))
                     print("I dont understand")
                     continue
+    assistant.speak("Goodbye")
     
 def main():
     from tools.gesture_recognition import start_gesture_recog

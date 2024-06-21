@@ -11,6 +11,5 @@ df_path = pd.read_csv(dfs_path)
 
 tools = [
     note_engine_tool,
-    # dataframe_reader_engine_tool,
     file_reader_engine_tool,
 ]

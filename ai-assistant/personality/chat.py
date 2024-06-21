@@ -10,7 +10,7 @@ nlp = spacy.load("en_core_web_sm")
 
 function_intents = ["search", "news", "send_message", "run_program", 
                     "play_music", "summarize", "notion","open_site",
-                    "ask_question","work","nap","games","search_file",
+                    "ask_question","morning_routine","night_routine","work","nap","games","search_file",
                     "set_reminder","bored", "control_player",
                     "get_mails","send_mails",]
 
@@ -19,7 +19,7 @@ with open('personality/intents.json', 'r') as f:
     intents = json.load(f)
 
 # Load the pre-trained model and other data
-FILE = "personality/makima_v_2.pth"
+FILE = "personality/makima_v_3.pth"
 data = torch.load(FILE)
 
 input_size = data["input_size"]

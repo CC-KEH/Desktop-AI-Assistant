@@ -64,7 +64,6 @@ class Utils:
             except Exception as e:
                 return "Sorry, I could'nt catch what you were saying."
 
-
 def read_json(file_path)->ConfigBox:
     with open(file_path, 'r') as file:
         data = json.load(file)

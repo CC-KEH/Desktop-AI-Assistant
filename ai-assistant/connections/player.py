@@ -49,8 +49,9 @@ class SpotipyPlayer:
                 return playlist['id']
         return None
 
-    def play_playlist(self, playlist_name):
-        playlist_id = self.get_playlist_id(playlist_name)
+    def play_playlist(self, playlist_name=None, playlist_id=None):
+        if playlist_id is None:
+            playlist_id = self.get_playlist_id(playlist_name)
         tracks = self.get_playlist_tracks(playlist_id)
         uris = [track['track']['uri'] for track in tracks['items']]
         self.sp.start_playback(uris=uris)
