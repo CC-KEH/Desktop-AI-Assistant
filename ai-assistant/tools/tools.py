@@ -28,8 +28,6 @@ def get_reader_engine():
     )
     return query_engine_tool
 
-
-
 note_engine_tool = FunctionTool.from_defaults(
     fn=save_note,
     name='note_saver',
