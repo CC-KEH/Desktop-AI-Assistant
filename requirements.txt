@@ -24,7 +24,9 @@ mediapipe
 pycaw
 discord
 google-generativeai
-langchain
 PyPDF2
-langchain_google_genai
 faiss_cpu
+langchain-google-genai==1.0.3
+langchain-text-splitters==0.0.1
+langchain-community==0.0.37
+langchain==0.1.17
